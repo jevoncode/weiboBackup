@@ -1,0 +1,22 @@
+subprojects{
+  apply plugin:'java'
+  repositories{
+    mavenCentral();
+  }
+}
+
+project(':weibo4j'){
+  dependencies{
+  compile group:'log4j',name:'log4j',version:'1.2.16'
+  compile group:'commons-codec',name:'commons-codec',version:'1.3'
+  compile group:'commons-httpclient',name:'commons-httpclient',version:'3.1'
+  compile group:'commons-logging',name:'commons-logging',version:'1.1'
+  compile group:'org.codehaus.jackson',name:'jackson-core-asl',version:'1.8.5'
+ }
+}
+
+project(':backup'){
+  dependencies{
+    compile project(':weibo4j')
+  }
+}
