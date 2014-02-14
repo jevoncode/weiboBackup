@@ -18,5 +18,7 @@ project(':weibo4j'){
 project(':backup'){
   dependencies{
     compile project(':weibo4j')
+	compile 'mysql:mysql-connector-java:5.1.28'
+	testCompile 'junit:junit:4.8'
   }
 }
