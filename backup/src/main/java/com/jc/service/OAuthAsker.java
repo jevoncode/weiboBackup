@@ -4,11 +4,13 @@ import weibo4j.Oauth;
 import weibo4j.model.WeiboException;
 import weibo4j.http.AccessToken;
 import com.jc.model.User;
+import com.jc.dao.UserDao;
+import java.sql.SQLException;
 
 public class OAuthAsker{
-	public String assembleOAuthURL(User user) throws WeiboException{ 
+	public String assembleOAuthURL() throws WeiboException{ 
 		Oauth oauth = new Oauth();
-		String oauthURL = oauth.authorize(user.getCode(),"",""); 
+		String oauthURL = oauth.authorize("code","jc"); //code and state 
 		return oauthURL;
 	}	
 
@@ -17,5 +19,14 @@ public class OAuthAsker{
 		AccessToken accessToken = oauth.getAccessTokenByCode(user.getCode()); 
 		return accessToken;
     }
-
+	public User userAuthorize(User user) throws WeiboException{
+		AccessToken accessToken = askForToken(user);
+		user.setAccessToken(accessToken.getAccessToken());
+		try{
+			(new UserDao()).saveUser(user);
+		}catch(SQLException e){
+			user = null;
+		}
+		return user;
+	}
 }
