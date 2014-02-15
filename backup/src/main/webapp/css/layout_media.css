@@ -1,0 +1,61 @@
+.WB_media_list{
+	margin-right:-20px;
+	padding:0 0 15px;
+	display: inline;
+	vertical-align: top;
+}
+
+ul{
+	margin:0;
+	list-style-type: disc;
+	-webkit-margin-before:1em;
+	-webkit-margin-after:1em;
+	-webkit-margin-start: 0px;
+	-webkit-margin-end:0px;
+	-webkit-padding-start: 40px;
+}
+
+li{
+	list-style:none;
+	text-align: -webkit-match-parent;
+	padding:0;
+}
+.chePicMin{
+	display:inline-block;
+	vertical-align: top;
+	min-width: 36px;
+	max-width:120px;
+	text-align: center;
+}
+.S_bg2{
+	background-color:#dbc4a5;
+}
+.bigcursor{
+	cursor: url(../images/common/big.cur),auto!important;
+}
+
+img{
+	vertical-align: top;
+	display:inline-block;
+	max-width:120px;
+	max-height:120px;
+	border:0;
+}
+.bigcursor img{
+	cursor: url(../images/common/big.cur),auto!important;
+}
+.map_data{
+	padding:0 0 10px;
+}
+.W_icol6{
+	display:inline-block;
+	width:16px;
+	height: 16px;
+	background-image: url(../images/common/icon.png);
+	_background-image:url(../images/common/icon.gif);
+	background-repeat:no-repeat;
+}
+.icon_locate{
+	background-position:-225px 0;
+	vertical-align: text-bottom;
+}

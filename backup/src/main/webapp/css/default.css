@@ -1,0 +1,41 @@
+body{
+	font:12px/1.125 Arial, Helvetica, sans-serif;
+	color: #3e1e1e;
+}
+.S_line2{
+	border-color: #e6e6e6;
+}
+.WB_text{
+	font-size:14px;
+	line-height:23px; 
+}
+.WB_func{
+/*no use,like just comments*/
+}
+.S_txt2{
+	color:#808080;
+}
+i{
+	font-style: normal;
+	font-weight: :normal;
+}
+.S_txt3{
+	color:#aeaeae;
+}
+a{
+	color: #cf9e8b;
+	text-decoration:none; 
+}
+a:-webkit-any-link{
+	cursor: auto;
+}
+em{
+	font-style:normal;
+	font-weight:normal;
+}
+.S_link2{
+	color: #885a62;
+}
+.map_data{
+	font-size: 12px;
+}

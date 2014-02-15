@@ -1,0 +1,59 @@
+
+div{
+	display:block;
+}
+.WB_feed_type{
+	margin:-1px 0 0 ;
+	padding:20px 0 0;
+	zoom:1;
+}
+.WB_screen{
+	position:absolute;
+}
+
+.WB_feed_detail{
+	_width:560px;
+	border-bottom-width: 1px;
+	border-bottom-style:solid;
+	padding:0 0 11px;
+	overflow: hidden;
+}
+.clearfix{
+	display:block;
+}
+.clearfix:after{
+	content:".";
+	display:block;
+	height:0;
+	clear:both;
+	visibility:hidden;
+}
+.WB_detail{
+	margin-left: 0;
+}
+.WB_text{ 
+	padding:4px 0 4px;
+}
+.WB_handle{
+	float:right;
+}
+.S_txt3{
+	margin:0 6px 0 8px;
+}
+.W_ico20{
+	position:relative;
+	display: inline-block;
+	background-image: url(../images/common/icon.png);
+	_background-image: url(../images/common/icon.png);
+	background-repeat: no-repeat;
+}
+.icon_praised_b{
+	_margin-top:1px;
+	width: 13px;
+	height:14px;
+	background-position: -75px 0;
+	vertical-align: text-bottom;
+}
+.WB_time{
+	margin:0 7px 0 0;
+}
