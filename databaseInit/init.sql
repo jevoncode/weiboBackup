@@ -1,6 +1,6 @@
 create table user(
 	id int not null primary key auto_increment,
-	seesion varchar(100),
+	user_session varchar(100),
 	user_code	varchar(100),
 	access_token varchar(250),
 	expires_in int,
