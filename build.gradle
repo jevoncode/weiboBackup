@@ -20,7 +20,7 @@ project(':backup'){
 	dependencies{
 		compile project(':weibo4j')
 		compile 'mysql:mysql-connector-java:5.1.28'
-		compile 'javax.servlet:servlet-api:2.5'
+		providedCompile 'javax.servlet:servlet-api:2.5'
 		testCompile 'junit:junit:4.8'
 	}
 	task jcWar(type: War){
