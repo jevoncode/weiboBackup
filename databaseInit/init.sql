@@ -7,49 +7,48 @@ create table user(
 	uid bigint unsigned,
 	created_time timestamp
 );
-
+drop table weibo;
 create table weibo(
 	id int not null primary key auto_increment,
-	weibo_id bigint unsigned ,
-	idstr	varchar(50),
-	created_at varchar(50),
+	created_at timestamp,
+	weibo_id varchar(50),
+	mid varchar(50),
+	idstr bigint,
 	weibo_text varchar(1000),
-	weibo_source varchar(100),
+	weibo_source_id int,
 	favorited char(1),
 	truncated char(1),
-	in_reply_to_status_id varchar(100),
-	in_reply_to_user_id	varchar(100),
+	in_reply_to_status_id bigint ,
+	in_reply_to_user_id bigint ,
 	in_reply_to_screen_name varchar(50),
-	thumbnail_pic	varchar(50),
-	bmiddle_pic		varchar(50),
-	orginal_pic		varchar(50),
-	geo_id int,
-	mid bigint unsigned,
+	thumbnail_pic	varchar(500),
+	bmiddle_pic		varchar(500),
+	orginal_pic		varchar(500),
+	retweeted_weibo_id int,
+	geo varchar(500),
+	longitude double,
+	latitude double,
 	reposts_count int,
 	comments_count int,
-	attitudes_count int,
-	annotation_id int,
-	author_id int,
-	retweeted_weibo_id bigint unsigned,
+	annotation varchar(500),
 	mlevel int,
-	visible int,
-	pic_urls varchar(500),	
+	visible_id int,
 	created_time timestamp
 );
 
-create table geo(
+create table weibo_source (
 	id int not null primary key auto_increment,
-	longitude varchar(50),
-	latitude varchar(50),
-	city varchar(50),
-	province varchar(50),
-	city_name varchar(50),
-	province_name varchar(50),
-	address	varchar(250),
-	pinyin	varchar(250),
-	more	varchar(500),
-	created_time timestamp
+	url	varchar(50),
+	relation_ship varchar(50),
+	weibo_source_name varchar(50)
 );
+
+create table visible (
+	id int not null primary key auto_increment,
+	visible_type int,
+	list_id int
+);
+ 
 
 create table author(
 	id int not null primary key auto_increment,

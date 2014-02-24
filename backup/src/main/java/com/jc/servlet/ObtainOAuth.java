@@ -21,11 +21,12 @@ public class ObtainOAuth extends HttpServlet{
 		User user = new User();
 		user.setSession(session.getId());
 		user.setCreatedTime(new Date());
+		user.setCode(code);
 		try{
 			oAuthAsker.userAuthorize(user);	
 		}catch(WeiboException e){
 			e.printStackTrace();
 		}
-		resp.sendRedirect("/WEB-INF/jsp/main.jsp");
+		req.getRequestDispatcher("WEB-INF/jsp/main.jsp").forward(req,resp);
 	}
 }

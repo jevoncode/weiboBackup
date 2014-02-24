@@ -28,4 +28,20 @@ public class UserDaoTest{
 			Assert.assertEquals("is it go right?",expectedInt,realInt);
 		}
 	}
+
+	@Test
+	public void getUserBySessionId(){
+		final UserDao userDao = new UserDao();
+		final int expectedInt = 1;
+		int realInt = 0;
+		try{
+			User user = userDao.getUserBySessionId("testSession");
+			if(user!=null)
+				realInt =1;
+		}catch(SQLException e){
+			e.printStackTrace();
+		}finally{
+			Assert.assertEquals("The user is null?",expectedInt,realInt);
+		}
+	}
 }

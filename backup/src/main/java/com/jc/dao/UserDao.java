@@ -2,11 +2,16 @@ package com.jc.dao;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.jc.model.User;
 public class UserDao extends DaoBase{
 	
 	private PreparedStatement pstmt = null;
+	private static final Logger LOG = LoggerFactory.getLogger(UserDao.class);
 	public UserDao(){
 		super();
 	}
@@ -29,5 +34,34 @@ public class UserDao extends DaoBase{
 		pstmt.executeUpdate();
 		pstmt.close();
 		conn.close();
+	}
+	public User getUserBySessionId(String sessionId) throws SQLException{
+		LOG.debug("Begin getUserBySessionId");
+		User user = null;
+		String sql = "SELECT * FROM user u where u.user_session = ?;";
+		pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1,sessionId);
+		ResultSet rs = pstmt.executeQuery();
+		while(rs.next()){
+			user = new User();
+			user.setId(rs.getLong(1));
+			user.setSession(rs.getString(2));
+			user.setCode(rs.getString(3));
+			user.setAccessToken(rs.getString(4));
+			user.setExpiresIn(rs.getInt(5));
+			user.setUid(rs.getLong(6));
+			user.setCreatedTime(new Date(rs.getTimestamp(7).getTime()));	
+			LOG.debug("find a User:Id="+user.getId()+
+						",Session="+user.getSession()+
+						",Code="+user.getCode()+
+						",AccessToken="+user.getAccessToken()+
+						",ExpireIn="+user.getExpiresIn()+
+						",Uid="+user.getUid()+
+						",CreatedTime="+user.getCreatedTime());
+		}
+		rs.close();
+		pstmt.close();
+		conn.close();
+		return user;
 	}
 }

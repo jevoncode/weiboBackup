@@ -20,6 +20,8 @@ project(':backup'){
 	dependencies{
 		compile project(':weibo4j')
 		compile 'mysql:mysql-connector-java:5.1.28'
+		compile 'org.slf4j:slf4j-api:1.7.5'
+		compile 'org.slf4j:slf4j-log4j12:1.7.5'
 		providedCompile 'javax.servlet:servlet-api:2.5'
 		testCompile 'junit:junit:4.8'
 	}

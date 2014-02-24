@@ -30,6 +30,14 @@
 		<servlet-name>ObtainOAuth</servlet-name>
 		<servlet-class>com.jc.servlet.ObtainOAuth</servlet-class>	
 	</servlet>
+	<servlet>
+		<servlet-name>backup</servlet-name>
+		<servlet-class>com.jc.servlet.BackupServlet</servlet-class>	
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>backup</servlet-name>
+		<url-pattern>/backup</url-pattern>
+	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>ObtainOAuth</servlet-name>
 		<url-pattern>/obtainoauth</url-pattern>
