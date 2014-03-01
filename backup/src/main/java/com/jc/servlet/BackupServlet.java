@@ -22,9 +22,9 @@ public class BackupServlet extends HttpServlet{
 			e.printStackTrace();
 		}
 		if(isSave)
-			resp.sendRedirect("WEB-INF/jsp/success.jsp");	
+			req.getRequestDispatcher("WEB-INF/jsp/success.jsp").forward(req,resp);
 		else
-			resp.sendRedirect("WEB-INF/jsp/fail.jsp");
+			req.getRequestDispatcher("WEB-INF/jsp/success.jsp").forward(req,resp);
 		
 	}
 }

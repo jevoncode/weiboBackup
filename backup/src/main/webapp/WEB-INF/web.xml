@@ -34,6 +34,14 @@
 		<servlet-name>backup</servlet-name>
 		<servlet-class>com.jc.servlet.BackupServlet</servlet-class>	
 	</servlet>
+	<servlet>
+		<servlet-name>down</servlet-name>
+		<servlet-class>com.jc.servlet.DownloadServlet</servlet-class>	
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>down</servlet-name>
+		<url-pattern>/download</url-pattern>
+	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>backup</servlet-name>
 		<url-pattern>/backup</url-pattern>

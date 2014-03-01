@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Date;
 import weibo4j.model.Status;
 import weibo4j.model.Source;
@@ -23,6 +24,52 @@ public class WeiboDao extends DaoBase{
 			saveStatus(s);
 		conn.close();
 	}
+
+	public List<Status> getAll() {
+		String sql = "SELECT created_at,"+
+						"weibo_text,"+
+						"in_reply_to_screen_name,"+
+						"thumbnail_pic,"+
+						"geo,"+
+						"longitude,"+
+						"reposts_count,"+
+						"comments_count"+
+						" FROM weibo ORDER BY created_at desc;";
+		LOG.debug("get all weibo,sql:"+sql);
+		Status s = null;
+		List<Status> statuses = new ArrayList<Status>();
+		try{
+			pstmt = conn.prepareStatement(sql);
+			ResultSet rs = pstmt.executeQuery();
+			while(rs.next()){
+				s = new Status();
+				s.setCreatedAt(new Date(rs.getTimestamp(1).getTime()));
+				s.setText(rs.getString(2));
+				s.setInReplyToScreenName(rs.getString(3));
+				s.setThumbnailPic(rs.getString(4));
+				s.setGeo(rs.getString(5));
+				s.setLongitude(rs.getDouble(6));
+				s.setRepostsCount(rs.getInt(7));
+				s.setCommentsCount(rs.getInt(8));
+				statuses.add(s);
+				//LOG.debug("get Weibo from database:"+s.getText());
+			}
+			rs.close();
+			pstmt.close();
+			conn.close();
+		}catch(SQLException e){
+			e.printStackTrace();
+		}finally{
+			try{
+				pstmt.close();
+				conn.close();
+			}catch(SQLException e2){
+				e2.printStackTrace();
+			}
+		}
+		return statuses;
+	}	
+
 	public Long saveStatus(Status s) throws SQLException{
 		Long id = null;
 		if(s.getRetweetedStatus()!=null){
