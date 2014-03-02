@@ -21,30 +21,29 @@ public class CombineWeibo{
 	public String getValue(Object obj,String name){
 		String value = null;
 		String[] args = name.split("\\.");
+		int argLen = args.length;
 		String objName = upperCaseFirst(args[0]);
 		Class clazz = obj.getClass();
 		int index = clazz.getName().indexOf(objName);
 		LOG.debug("obeject'name index of className:"+index);
 		LOG.debug("object is:"+objName+" and length of object'name:"+objName.length());
 		LOG.debug("className:"+clazz.getName()+" className's length:"+clazz.getName().length());
-		if(index+objName.length()==clazz.getName().length()) {//it the object's Name
-			try{
-				Method m = clazz.getMethod("get"+upperCaseFirst(args[1]));
-				value = String.valueOf(m.invoke(obj));
-				LOG.debug("getValue name:"+name+" and corresponding value:"+value);
-			}catch(NoSuchMethodException e1){
-				LOG.debug("No such method exception");
-				e1.printStackTrace();
-			}catch(IllegalAccessException e2){
-				LOG.debug("Illegal access exception");
-				e2.printStackTrace();
-			}catch(IllegalArgumentException e3){
-				LOG.debug("Illegal argument exception");
-				e3.printStackTrace();
-			}catch(InvocationTargetException e4){
-				LOG.debug("Invocation target exception");
-				e4.printStackTrace();
-			}
+		try{
+			Method m = clazz.getMethod("get"+upperCaseFirst(args[argLen-1]));
+			value = String.valueOf(m.invoke(obj));
+			LOG.debug("getValue name:"+name+" and corresponding value:"+value);
+		}catch(NoSuchMethodException e1){
+			LOG.debug("No such method exception");
+			e1.printStackTrace();
+		}catch(IllegalAccessException e2){
+			LOG.debug("Illegal access exception");
+			e2.printStackTrace();
+		}catch(IllegalArgumentException e3){
+			LOG.debug("Illegal argument exception");
+			e3.printStackTrace();
+		}catch(InvocationTargetException e4){
+			LOG.debug("Invocation target exception");
+			e4.printStackTrace();
 		}
 		return value==null?"":value;
 	}
@@ -58,19 +57,36 @@ public class CombineWeibo{
 		int end = temp.indexOf("}",begin);
 		while(begin!=-1){
 			String name = temp.substring(begin+2,end);
-			String value = getValue(status,name);
-			name = name.replace(".","\\u002E");
-			//LOG.debug("regex:"+"\\$\\{"+name+"\\}");
-			value = escapeChar(value);
-			debugBeforeTemp = temp;
-			try{
-			temp = temp.replaceFirst("\\u0024\\u007B"+name+"\\u007D",value);
-			debugAfterTemp = temp;
-			}catch(IllegalArgumentException e){
-				LOG.debug("temp which before replaced:"+debugBeforeTemp);
-				LOG.debug("replace value:"+value);
-				LOG.debug("temp which after replaced:"+debugAfterTemp);
-				throw e;
+			if(name.split("\\.").length<3){
+				String value = getValue(status,name);
+				name = name.replace(".","\\u002E");
+				//LOG.debug("regex:"+"\\$\\{"+name+"\\}");
+				value = escapeChar(value);
+				debugBeforeTemp = temp;
+				try{
+					temp = temp.replaceFirst("\\u0024\\u007B"+name+"\\u007D",value);
+					debugAfterTemp = temp;
+				}catch(IllegalArgumentException e){
+					//LOG.debug("temp which before replaced:"+debugBeforeTemp);
+					//LOG.debug("replace value:"+value);
+					//LOG.debug("temp which after replaced:"+debugAfterTemp);
+					throw e;
+				}
+			}else{ //retweeted status combine
+				String value = getValue(status.getRetweetedStatus(),name);
+				name = name.replace(".","\\u002E");
+				//LOG.debug("regex:"+"\\$\\{"+name+"\\}");
+				value = escapeChar(value);
+				debugBeforeTemp = temp;
+				try{
+					temp = temp.replaceFirst("\\u0024\\u007B"+name+"\\u007D",value);
+					debugAfterTemp = temp;
+				}catch(IllegalArgumentException e){
+					//LOG.debug("temp which before replaced:"+debugBeforeTemp);
+					//LOG.debug("replace value:"+value);
+					//LOG.debug("temp which after replaced:"+debugAfterTemp);
+					throw e;
+				}
 			}
 			begin = temp.indexOf("${");
 			end = temp.indexOf("}",begin);
@@ -82,15 +98,11 @@ public class CombineWeibo{
 	public String combineWeibo() throws FileNotFoundException,IOException,URISyntaxException{
 		StringBuffer cs = new StringBuffer();
 		WeiboDao weiboDao = new WeiboDao(); 
-		List<Status> statuses = weiboDao.getAll();
+		List<Status> statuses = weiboDao.getAllTop();
 		for(Status s:statuses){
-			String resource = "/templates/flat.html";
-			if(s.getThumbnailPic()!=null&&s.getLongitude()!=-1){
-				resource = "/templates/geo.html";
-			}else if(s.getThumbnailPic()!=null){
-				resource = "/templates/pic.html";
-			}else{
-				resource = "/templates/flat.html";
+			String resource = "/templates/status.html";
+			if(s.getRetweetedStatus()!=null){
+				resource = "/templates/retweeted.html";
 			}
 			URL url= this.getClass().getResource(resource);
 			cs.append(combineTemplate(url.toURI(),s));

@@ -13,6 +13,7 @@ import java.util.Date;
 import weibo4j.model.Status;
 import weibo4j.model.Source;
 import weibo4j.model.Visible;
+import weibo4j.model.User;
 public class WeiboDao extends DaoBase{
 	private PreparedStatement pstmt =null;
 	private static final Logger LOG = LoggerFactory.getLogger(WeiboDao.class);
@@ -25,17 +26,23 @@ public class WeiboDao extends DaoBase{
 		conn.close();
 	}
 
-	public List<Status> getAll() {
+	public List<Status> getAllTop() {
 		String sql = "SELECT created_at,"+
-						"weibo_text,"+
-						"in_reply_to_screen_name,"+
-						"thumbnail_pic,"+
-						"geo,"+
-						"longitude,"+
-						"reposts_count,"+
-						"comments_count"+
-						" FROM weibo ORDER BY created_at desc;";
-		LOG.debug("get all weibo,sql:"+sql);
+						"w.weibo_text,"+
+						"w.in_reply_to_screen_name,"+
+						"w.thumbnail_pic,"+
+						"w.geo,"+
+						"w.longitude,"+
+						"w.reposts_count,"+
+						"w.comments_count,"+
+						"w.retweeted_weibo_id,"+
+						"w.user_id"+
+						" FROM weibo w"+
+						" where not exists("+
+						" 		select 1 from weibo w2 "+
+						" 			where w.id = w2.retweeted_weibo_id) "+
+						" ORDER BY w.created_at desc;";
+		LOG.debug("get all top weibo,sql:"+sql);
 		Status s = null;
 		List<Status> statuses = new ArrayList<Status>();
 		try{
@@ -51,6 +58,89 @@ public class WeiboDao extends DaoBase{
 				s.setLongitude(rs.getDouble(6));
 				s.setRepostsCount(rs.getInt(7));
 				s.setCommentsCount(rs.getInt(8));
+				int retweetedId = rs.getInt(9);
+				int userId = rs.getInt(10);
+				if(retweetedId!=-1){
+					String retweetedSql = "SELECT w.created_at,"+
+						"w.weibo_text,"+
+						"w.in_reply_to_screen_name,"+
+						"w.thumbnail_pic,"+
+						"w.geo,"+
+						"w.longitude,"+
+						"w.reposts_count,"+
+						"w.comments_count "+
+						" FROM weibo w"+
+						" WHERE w.id =?;";
+					LOG.debug("get retweeted WeiBo:"+retweetedSql);
+					PreparedStatement retweetedPstmt = conn.prepareStatement(retweetedSql);
+					retweetedPstmt.setInt(1,retweetedId);
+					ResultSet rsR = retweetedPstmt.executeQuery();
+					while(rsR.next()){
+						Status retweeted = new Status();
+						retweeted.setCreatedAt(new Date(rsR.getTimestamp(1).getTime()));
+						retweeted.setText(rsR.getString(2));
+						retweeted.setInReplyToScreenName(rsR.getString(3));
+						retweeted.setThumbnailPic(rsR.getString(4));
+						retweeted.setGeo(rsR.getString(5));
+						retweeted.setLongitude(rsR.getDouble(6));
+						retweeted.setRepostsCount(rsR.getInt(7));
+						retweeted.setCommentsCount(rsR.getInt(8));
+						s.setRetweetedStatus(retweeted);
+					}
+					rsR.close();
+					retweetedPstmt.close();
+				}
+				if(userId!=-1){
+					String userSql = "SELECT u.origin_id,"+
+							"u.screen_name,"+
+							"u.name,"+
+							"u.province,"+
+							"u.city,"+
+							"u.location,"+
+							"u.description,"+
+							"u.url,"+
+							"u.profile_image_url,"+
+							"u.domain,"+
+							"u.gender,"+
+							"u.followers_count,"+
+							"u.friends_count,"+
+							"u.statues_count,"+
+							"u.favourites_count,"+
+							"u.created_at,"+
+							"u.following,"+
+							"u.verified,"+
+							"u.verified_type"+
+							" FROM user u"+
+							" WHERE u.id=?;";
+					LOG.debug("get weibo's owner,sql:"+userSql);
+					PreparedStatement userPstmt = conn.prepareStatement(userSql);
+					userPstmt.setInt(1,userId);
+					ResultSet ur =  userPstmt.executeQuery();
+					while(ur.next()){
+						User user = new User();
+						user.setId(ur.getString(1));
+						user.setScreenName(ur.getString(2));
+						user.setName(ur.getString(3));
+						user.setProvince(ur.getInt(4));
+						user.setCity(ur.getInt(5));
+						user.setLocation(ur.getString(6));
+						user.setDescription(ur.getString(7));
+						user.setUrl(ur.getString(8));
+						user.setProfileImageUrl(ur.getString(9));
+						user.setUserDomain(ur.getString(10));
+						user.setGender(ur.getString(11));
+						user.setFollowersCount(ur.getInt(12));
+						user.setFriendsCount(ur.getInt(13));
+						user.setFavouritesCount(ur.getInt(14));
+						user.setCreatedAt(new Date(ur.getTimestamp(15).getTime()));
+						user.setFollowing("Y".equals(ur.getString(16)));
+						user.setVerified("Y".equals(ur.getString(17)));
+						user.setVerifiedType(ur.getInt(18));
+						s.setUser(user);
+					}
+					ur.close();
+					userPstmt.close();
+				}
 				statuses.add(s);
 				//LOG.debug("get Weibo from database:"+s.getText());
 			}
@@ -70,15 +160,17 @@ public class WeiboDao extends DaoBase{
 		return statuses;
 	}	
 
-	public Long saveStatus(Status s) throws SQLException{
-		Long id = null;
+	public int saveStatus(Status s) throws SQLException{
+		int id = -1;
+		int userId =-1 ;
 		if(s.getRetweetedStatus()!=null){
-			id = saveStatus(s.getRetweetedStatus());  
+			id = saveStatus(s.getRetweetedStatus()); 
+			userId = saveUser(s.getUser()); 
 		}
 		Source source = s.getSource();
 		Visible visible = s.getVisible();
-		Long sourceId = null;
-		Long visibleId = null; 
+		int sourceId = -1;
+		int visibleId = -1; 
 		if(source!=null)
 			sourceId = saveSource(source); 
 		if(visible!=null)
@@ -107,6 +199,7 @@ public class WeiboDao extends DaoBase{
 					"annotation=?,"+	
 					"mlevel=?,"+
 					"visible_id=?,"+
+					"user_id =?,"+
 					"created_time=?;";
 			
 		LOG.debug("begin save Weibo just swooped,sql:"+sql);
@@ -116,7 +209,7 @@ public class WeiboDao extends DaoBase{
 		pstmt.setString(3,s.getMid());
 		pstmt.setLong(4,s.getIdstr());
 		pstmt.setString(5,s.getText());
-		pstmt.setLong(6,sourceId==null?0:sourceId);
+		pstmt.setInt(6,sourceId);
 		pstmt.setString(7,s.isFavorited()==true?"Y":"N");
 		pstmt.setString(8,s.isTruncated()==true?"Y":"N");
 		pstmt.setLong(9,s.getInReplyToStatusId());
@@ -125,7 +218,7 @@ public class WeiboDao extends DaoBase{
 		pstmt.setString(12,s.getThumbnailPic());
 		pstmt.setString(13,s.getBmiddlePic());
 		pstmt.setString(14,s.getOriginalPic());
-		pstmt.setLong(15,id==null?0:id);  
+		pstmt.setInt(15,id);  
 		pstmt.setString(16,s.getGeo());
 		pstmt.setDouble(17,s.getLongitude());
 		pstmt.setDouble(18,s.getLatitude());
@@ -133,8 +226,9 @@ public class WeiboDao extends DaoBase{
 		pstmt.setInt(20,s.getCommentsCount());
 		pstmt.setString(21,s.getAnnotations());
 		pstmt.setInt(22,s.getMlevel());
-		pstmt.setLong(23,visibleId==null?0:visibleId);
-		pstmt.setTimestamp(24,new Timestamp((new Date()).getTime()));				
+		pstmt.setInt(23,visibleId);
+		pstmt.setInt(24,userId);
+		pstmt.setTimestamp(25,new Timestamp((new Date()).getTime()));				
 		pstmt.executeUpdate();
 		pstmt.close();
 		
@@ -144,14 +238,13 @@ public class WeiboDao extends DaoBase{
 		pstmt.setString(1,s.getId());
 		ResultSet rs = 	pstmt.executeQuery();
 		while(rs.next()){
-			id = rs.getLong(1);
+			id = rs.getInt(1);
 		}
 		rs.close();
 		pstmt.close();
 		return id;
 	}
-	public Long saveSource(Source s) throws SQLException{
-		Long id = null;
+	public int saveSource(Source s) throws SQLException{
 		String sql = "insert into weibo_source "+
 					"set url= ?,"+
 					"relation_ship = ?,"+
@@ -164,6 +257,7 @@ public class WeiboDao extends DaoBase{
 		pstmt.executeUpdate();
 		pstmt.close();
 		
+		int id = -1;
 		sql = "select id from weibo_source s where s.url=?"+
 			" and s.relation_ship=?"+
 			" and weibo_source_name=?;";
@@ -174,14 +268,13 @@ public class WeiboDao extends DaoBase{
 		pstmt.setString(3,s.getName());
 		ResultSet rs = 	pstmt.executeQuery();
 		while(rs.next()){
-			id = rs.getLong(1);
+			id = rs.getInt(1);
 		}
 		rs.close();
 		pstmt.close();
 		return id;
 	}
-	public Long saveVisible(Visible v) throws SQLException{
-		Long id = null;
+	public int saveVisible(Visible v) throws SQLException{
 		String sql = "insert into visible "+
 					" set visible_type= ?,"+
 					" list_id= ?;";
@@ -191,7 +284,8 @@ public class WeiboDao extends DaoBase{
 		pstmt.setInt(2,v.getList_id());
 		pstmt.executeUpdate();
 		pstmt.close();
-		
+	
+		int id = -1;	
 		sql = "select id from visible v where v.visible_type=?"+
 				" and v.list_id=?;";
 		LOG.debug("select id of VISIBLE,sql:"+sql);
@@ -200,7 +294,65 @@ public class WeiboDao extends DaoBase{
 		pstmt.setInt(2,v.getList_id());
 		ResultSet rs = 	pstmt.executeQuery();
 		while(rs.next()){
-			id = rs.getLong(1);
+			id = rs.getInt(1);
+		}
+		rs.close();
+		pstmt.close();
+		return id;
+	}
+	
+	public int saveUser(User user) throws SQLException{
+		String sql = "INSERT INTO user "+
+					"set origin_id=?,"+
+					"screen_name=?,"+
+					"name=?,"+
+					"province=?,"+
+					"city=?,"+
+					"location=?,"+
+					"description=?,"+
+					"url=?,"+
+					"profile_image_url=?,"+
+					"domain=?,"+
+					"gender=?,"+
+					"followers_count=?,"+
+					"statuses_count=?,"+
+					"favourites_count=?,"+
+					"created_at=?,"+
+					"following=?,"+
+					"verified=?,"+
+					"verified_type=?,"+
+					"created_time=?;";
+		LOG.debug("save weibo user,sql:"+sql);
+		pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1,user.getId());
+		pstmt.setString(2,user.getScreenName());
+		pstmt.setString(3,user.getName());
+		pstmt.setInt(4,user.getProvince());
+		pstmt.setInt(5,user.getCity());
+		pstmt.setString(6,user.getLocation());
+		pstmt.setString(7,user.getDescription());
+		pstmt.setString(8,user.getUrl());
+		pstmt.setString(9,user.getProfileImageUrl());
+		pstmt.setString(10,user.getUserDomain());
+		pstmt.setString(11,user.getGender());
+		pstmt.setInt(12,user.getFollowersCount());
+		pstmt.setInt(13,user.getStatusesCount());
+		pstmt.setInt(14,user.getFavouritesCount());
+		pstmt.setTimestamp(15,new Timestamp(user.getCreatedAt().getTime()));
+		pstmt.setString(16,user.isFollowing()==true?"Y":"N");
+		pstmt.setString(17,user.isVerified()==true?"Y":"N");
+		pstmt.setInt(18,user.getverifiedType());
+		pstmt.setTimestamp(19,new Timestamp(new Date().getTime()));
+		pstmt.executeUpdate();
+		pstmt.close();
+
+		int id = -1;
+		sql = "SELECT id FROM user WHERE origin_id=?;";
+		pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1,user.getId());
+		ResultSet rs = pstmt.executeQuery();
+		while(rs.next()){
+			id = rs.getInt(1);
 		}
 		rs.close();
 		pstmt.close();

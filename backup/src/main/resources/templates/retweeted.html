@@ -1,0 +1,72 @@
+<!-- retweeted weibo-->
+		<div class="WB_feed_type S_line2"> 
+			<div  class="WB_feed_detail S_line2 clearfix">
+				<div class="WB_detail">
+					<div class="WB_text" nick-name="${status.inReplyToScreenName}">${status.text}</div>
+					<div class="WB_media_expand S_line1 S_bg1">
+						<!-- it's difficult to use,so cancel it
+						<div class="WB_arrow"> 
+							<em class="S_line1_c">◆</em>
+							<span class="S_bg1_c">◆</span>
+						</div>
+						-->
+						<div node-type="feed_list_forwardContent">
+							<div class="WB_info">
+								<a node-type="feed_list_originNick" class="WB_name S_func3" nick-name="${status.retweetedStatus.user.screenName}" href="/${status.retweetedStatus.user.userDomain}" title="${status.retweetedStatus.user.screenName}" usercard="id=1654433062">
+									${status.retweetedStatus.user.screenName}
+								</a>
+							</div>
+							<div class="WB_text">
+								<em>
+								${status.retweetedStatus.text}
+								</em>
+							</div>
+						</div>
+						<div node-type="feed_list_media_prev">
+						<ul class="WB_media_list clearfix">
+							<li>
+								<!-- img之间不能加空格 -->
+								<!-- 九宫格 -->
+								  mediaList
+								<!-- 九宫格 -->
+							</li>
+						</ul> 
+						</div>
+						<div class="WB_func clearfix">
+						<div class="WB_handle">
+							<i class="S_txt2" title="此条微博已经被阅读457次">阅读(457)</i>&nbsp;
+							<i >|</i>
+							<a href="javascript:void(0);" title="赞"><em class="W_ico20 icon_praised_b"></em>(1)</a>
+							<i class="S_txt3">|</i>
+							<a href="javascript:void(0);" >转发(${status.retweetedStatus.repostsCount})</a>
+							<i class="S_txt3">|</i>
+							<a href="javascript:void(0);" >收藏</a>
+							<i class="S_txt3">|</i>						
+							<a href="javascript:void(0);" >评论(${status.retweetedStatus.commentsCount})</a>
+						</div>
+						<div class="WB_from">
+							<a class="S_link2 WB_time">${status.retweetedStatus.createdAt}</a>
+							<em class="S_txt2">来自</em><a class="S_link2">iPad客户端</a>
+						</div>
+						</div> 
+					</div>
+					<div class="WB_func clearfix">
+						<div class="WB_handle">
+							<i class="S_txt2" title="此条微博已经被阅读457次">阅读(457)</i>&nbsp;
+							<i >|</i>
+							<a href="javascript:void(0);" title="赞"><em class="W_ico20 icon_praised_b"></em>(1)</a>
+							<i class="S_txt3">|</i>
+							<a href="javascript:void(0);" >转发(${status.repostsCount})</a>
+							<i class="S_txt3">|</i>
+							<a href="javascript:void(0);" >收藏</a>
+							<i class="S_txt3">|</i>						
+							<a href="javascript:void(0);" >评论(${status.commentsCount})</a>
+						</div>
+						<div class="WB_from">
+							<a class="S_link2 WB_time">${status.createdAt}</a>
+							<em class="S_txt2">来自</em><a class="S_link2">iPad客户端</a>
+						</div>
+					</div>
+				</div>
+			</div> 
+		</div>

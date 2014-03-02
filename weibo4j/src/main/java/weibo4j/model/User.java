@@ -215,6 +215,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
 		super();
 		init(json);
 	}
+	public User(){}
 
 	private void init(JSONObject json) throws WeiboException {
 		if(json!=null){

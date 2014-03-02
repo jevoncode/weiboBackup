@@ -17,7 +17,7 @@ public class UserDao extends DaoBase{
 	}
 	
 	public void saveUser(User user) throws SQLException{
-		String sql = "insert into user "+
+		String sql = "insert into myuser "+
 					"set user_session = ?,"+
 					"user_code = ?,"+
 					"access_token = ?,"+
@@ -38,7 +38,7 @@ public class UserDao extends DaoBase{
 	public User getUserBySessionId(String sessionId) throws SQLException{
 		LOG.debug("Begin getUserBySessionId");
 		User user = null;
-		String sql = "SELECT * FROM user u where u.user_session = ?;";
+		String sql = "SELECT * FROM myuser u where u.user_session = ?;";
 		pstmt = conn.prepareStatement(sql);
 		pstmt.setString(1,sessionId);
 		ResultSet rs = pstmt.executeQuery();
