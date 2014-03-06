@@ -24,9 +24,10 @@ public class ObtainOAuth extends HttpServlet{
 		user.setCode(code);
 		try{
 			oAuthAsker.userAuthorize(user);	
+			req.getRequestDispatcher("WEB-INF/jsp/main.jsp").forward(req,resp);
 		}catch(WeiboException e){
+			req.getRequestDispatcher("WEB-INF/jsp/loginDenied.jsp").forward(req,resp);
 			e.printStackTrace();
 		}
-		req.getRequestDispatcher("WEB-INF/jsp/main.jsp").forward(req,resp);
 	}
 }

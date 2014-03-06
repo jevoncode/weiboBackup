@@ -1,3 +1,4 @@
+drop table myuser;
 create table myuser(
 	id int not null primary key auto_increment,
 	user_session varchar(100),
@@ -14,7 +15,7 @@ create table weibo(
 	weibo_id varchar(50),
 	mid varchar(50),
 	idstr bigint,
-	weibo_text varchar(1000),
+	weibo_text blob,
 	weibo_source_id int,
 	favorited char(1),
 	truncated char(1),
@@ -35,15 +36,15 @@ create table weibo(
 	mlevel int,
 	visible_id int,
 	created_time timestamp
-);
-
+) ;
+drop table weibo_source;
 create table weibo_source (
 	id int not null primary key auto_increment,
 	url	varchar(50),
 	relation_ship varchar(50),
 	weibo_source_name varchar(50)
 );
-
+drop table visible;
 create table visible (
 	id int not null primary key auto_increment,
 	visible_type int,
@@ -60,9 +61,9 @@ create table user(
 	city		int,
 	location  varchar(250),
 	description	varchar(500),
-	url		varchar(50),
-	profile_image_url varchar(50),
-	domain	varchar(50),
+	url		varchar(500),
+	profile_image_url varchar(500),
+	domain	varchar(100),
 	gender	char(1),
 	followers_count int,
 	friends_count	int,

@@ -28,26 +28,17 @@ public class WeiboManager{
 		tm.client.setToken(user.getAccessToken()); 
 		StatusWapper status = tm.getUserTimeline(countPerPage,1);
 		LOG.debug(++limitCount+"st to invoke UserTimeline interface.");
-		try{
-			weiboDao.saveStatuses(status.getStatuses()); 
-		}catch(SQLException e){
-			//LOG.error(e.printStackTrace());
-			LOG.error(e.getMessage());
-		}
+		weiboDao.saveStatuses(status.getStatuses()); 
 		int total = (int)(status.getTotalNumber());
 		int totalPage = total%100 ==0? total/100:total/100+1;
 		int page = 2;
 		for(;page<totalPage;page++){
 			status = tm.getUserTimeline(countPerPage,page);
 			LOG.debug(++limitCount+"st to invoke UserTimeline interface.");
-			try{
-				weiboDao = new WeiboDao(); //TODO optimize
-				weiboDao.saveStatuses(status.getStatuses()); 
-			}catch(SQLException e){
-				//LOG.error(e.printStackTrace());
-				LOG.error(e.getMessage());
-			}
+			weiboDao = new WeiboDao(); //TODO optimize
+			weiboDao.saveStatuses(status.getStatuses()); 
 		}
+		LOG.debug("swoops "+WeiboDao.count+" Weibos");
 		return true;
 	}
 

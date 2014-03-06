@@ -16,7 +16,9 @@ public class UserDao extends DaoBase{
 		super();
 	}
 	
-	public void saveUser(User user) throws SQLException{
+	public void saveUser(User user){
+		LOG.debug("jc Begin to save myuser,user_code="+user.getCode());
+		try{
 		String sql = "insert into myuser "+
 					"set user_session = ?,"+
 					"user_code = ?,"+
@@ -34,6 +36,10 @@ public class UserDao extends DaoBase{
 		pstmt.executeUpdate();
 		pstmt.close();
 		conn.close();
+		}catch(SQLException e){
+			LOG.error("ocurrence error when save user,user_code:"+user.getCode());
+			e.printStackTrace();
+		}
 	}
 	public User getUserBySessionId(String sessionId) throws SQLException{
 		LOG.debug("Begin getUserBySessionId");

@@ -14,16 +14,35 @@ import weibo4j.model.Status;
 import weibo4j.model.Source;
 import weibo4j.model.Visible;
 import weibo4j.model.User;
+import com.jc.util.StringUtil;
 public class WeiboDao extends DaoBase{
+	public static int count = 0;
 	private PreparedStatement pstmt =null;
 	private static final Logger LOG = LoggerFactory.getLogger(WeiboDao.class);
 	public WeiboDao(){
 		super();
 	}
-	public void saveStatuses(List<Status> statuses) throws SQLException{
-		for(Status s:statuses)
-			saveStatus(s);
-		conn.close();
+	public void saveStatuses(List<Status> statuses) {
+		Status s = null;
+		try{
+			for(int i=0;i<statuses.size();i++){
+				s = statuses.get(i++);
+				saveStatus(s);
+			}
+			conn.close();
+		}catch(SQLException e){
+			if(s!=null)
+				LOG.error("occurrence error when save weibo:"+s);
+			else
+				LOG.error("occurrence error when save weibo:null");
+			e.printStackTrace();
+		}finally{
+			try{
+			conn.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public List<Status> getAllTop() {
@@ -61,6 +80,7 @@ public class WeiboDao extends DaoBase{
 				int retweetedId = rs.getInt(9);
 				int userId = rs.getInt(10);
 				if(retweetedId!=-1){
+					try{
 					String retweetedSql = "SELECT w.created_at,"+
 						"w.weibo_text,"+
 						"w.in_reply_to_screen_name,"+
@@ -89,8 +109,13 @@ public class WeiboDao extends DaoBase{
 					}
 					rsR.close();
 					retweetedPstmt.close();
+					}catch(SQLException e){
+						LOG.error("occurrence error when get a reweetedStatus,her id is :"+retweetedId);
+						throw e;
+					}
 				}
 				if(userId!=-1){
+					try{
 					String userSql = "SELECT u.origin_id,"+
 							"u.screen_name,"+
 							"u.name,"+
@@ -140,6 +165,10 @@ public class WeiboDao extends DaoBase{
 					}
 					ur.close();
 					userPstmt.close();
+					}catch(SQLException e){
+						LOG.error("occurrence a error when get a user,her id is"+userId);
+						throw e;
+					}
 				}
 				statuses.add(s);
 				//LOG.debug("get Weibo from database:"+s.getText());
@@ -148,6 +177,7 @@ public class WeiboDao extends DaoBase{
 			pstmt.close();
 			conn.close();
 		}catch(SQLException e){
+			LOG.error("occurrence a error when get a status:"+s);
 			e.printStackTrace();
 		}finally{
 			try{
@@ -163,10 +193,10 @@ public class WeiboDao extends DaoBase{
 	public int saveStatus(Status s) throws SQLException{
 		int id = -1;
 		int userId =-1 ;
-		if(s.getRetweetedStatus()!=null){
+		if(s.getRetweetedStatus()!=null)
 			id = saveStatus(s.getRetweetedStatus()); 
+		if(s.getUser()!=null)
 			userId = saveUser(s.getUser()); 
-		}
 		Source source = s.getSource();
 		Visible visible = s.getVisible();
 		int sourceId = -1;
@@ -208,7 +238,7 @@ public class WeiboDao extends DaoBase{
 		pstmt.setString(2,s.getId());
 		pstmt.setString(3,s.getMid());
 		pstmt.setLong(4,s.getIdstr());
-		pstmt.setString(5,s.getText());
+		pstmt.setString(5,StringUtil.filterEmoji(s.getText()));
 		pstmt.setInt(6,sourceId);
 		pstmt.setString(7,s.isFavorited()==true?"Y":"N");
 		pstmt.setString(8,s.isTruncated()==true?"Y":"N");
@@ -231,7 +261,7 @@ public class WeiboDao extends DaoBase{
 		pstmt.setTimestamp(25,new Timestamp((new Date()).getTime()));				
 		pstmt.executeUpdate();
 		pstmt.close();
-		
+		count++;	
 		sql = "select id from weibo w where w.weibo_id = ?;";		
 		LOG.debug("select id of WEIBO,sql:"+sql);
 		pstmt = conn.prepareStatement(sql);
@@ -330,7 +360,7 @@ public class WeiboDao extends DaoBase{
 		pstmt.setInt(4,user.getProvince());
 		pstmt.setInt(5,user.getCity());
 		pstmt.setString(6,user.getLocation());
-		pstmt.setString(7,user.getDescription());
+		pstmt.setString(7,StringUtil.filterEmoji(user.getDescription()));
 		pstmt.setString(8,user.getUrl());
 		pstmt.setString(9,user.getProfileImageUrl());
 		pstmt.setString(10,user.getUserDomain());

@@ -22,11 +22,7 @@ public class OAuthAsker{
 	public User userAuthorize(User user) throws WeiboException{
 		AccessToken accessToken = askForToken(user);
 		user.setAccessToken(accessToken.getAccessToken());
-		try{
-			(new UserDao()).saveUser(user);
-		}catch(SQLException e){
-			user = null;
-		}
+		(new UserDao()).saveUser(user);
 		return user;
 	}
 }
