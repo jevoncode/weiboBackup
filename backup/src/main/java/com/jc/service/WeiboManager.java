@@ -14,6 +14,7 @@ public class WeiboManager{
 	private WeiboDao weiboDao = new WeiboDao(); 
 	private int countPerPage = 100;
 	public boolean swoopWeibo(String sessionId) throws WeiboException{ 
+		int swoopCount = 0;
 		User user = null;
 		int limitCount = 0;
 		try{
@@ -29,16 +30,20 @@ public class WeiboManager{
 		StatusWapper status = tm.getUserTimeline(countPerPage,1);
 		LOG.debug(++limitCount+"st to invoke UserTimeline interface.");
 		weiboDao.saveStatuses(status.getStatuses()); 
+		swoopCount += status.getStatuses().size();
 		int total = (int)(status.getTotalNumber());
 		int totalPage = total%100 ==0? total/100:total/100+1;
 		int page = 2;
+		//for(;page<totalPage;page++){
 		for(;page<totalPage;page++){
 			status = tm.getUserTimeline(countPerPage,page);
 			LOG.debug(++limitCount+"st to invoke UserTimeline interface.");
 			weiboDao = new WeiboDao(); //TODO optimize
 			weiboDao.saveStatuses(status.getStatuses()); 
+			swoopCount += status.getStatuses().size();
 		}
-		LOG.debug("swoops "+WeiboDao.count+" Weibos");
+		LOG.debug("swoops "+swoopCount+" Weibos");
+		LOG.debug("saves "+WeiboDao.saveCount+" Weibos");
 		return true;
 	}
 

@@ -16,7 +16,7 @@ import weibo4j.model.Visible;
 import weibo4j.model.User;
 import com.jc.util.StringUtil;
 public class WeiboDao extends DaoBase{
-	public static int count = 0;
+	public static int saveCount = 0;
 	private PreparedStatement pstmt =null;
 	private static final Logger LOG = LoggerFactory.getLogger(WeiboDao.class);
 	public WeiboDao(){
@@ -26,8 +26,12 @@ public class WeiboDao extends DaoBase{
 		Status s = null;
 		try{
 			for(int i=0;i<statuses.size();i++){
-				s = statuses.get(i++);
-				saveStatus(s);
+				s = statuses.get(i);
+				LOG.debug("jc before filter emoji text=:\""+s.getText()+"\"");
+				LOG.debug("jc after filter emoji text=:\""+StringUtil.filterEmoji(s.getText())+"\"");
+				int flag = saveStatus(s);
+				if(flag==-1)
+					throw new SQLException("jc -1 SQLException,it means save one weibo failure");
 			}
 			conn.close();
 		}catch(SQLException e){
@@ -129,7 +133,7 @@ public class WeiboDao extends DaoBase{
 							"u.gender,"+
 							"u.followers_count,"+
 							"u.friends_count,"+
-							"u.statues_count,"+
+							"u.statuses_count,"+
 							"u.favourites_count,"+
 							"u.created_at,"+
 							"u.following,"+
@@ -156,11 +160,12 @@ public class WeiboDao extends DaoBase{
 						user.setGender(ur.getString(11));
 						user.setFollowersCount(ur.getInt(12));
 						user.setFriendsCount(ur.getInt(13));
-						user.setFavouritesCount(ur.getInt(14));
-						user.setCreatedAt(new Date(ur.getTimestamp(15).getTime()));
-						user.setFollowing("Y".equals(ur.getString(16)));
-						user.setVerified("Y".equals(ur.getString(17)));
-						user.setVerifiedType(ur.getInt(18));
+						user.setStatusesCount(ur.getInt(14));
+						user.setFavouritesCount(ur.getInt(15));
+						user.setCreatedAt(new Date(ur.getTimestamp(16).getTime()));
+						user.setFollowing("Y".equals(ur.getString(17)));
+						user.setVerified("Y".equals(ur.getString(18)));
+						user.setVerifiedType(ur.getInt(19));
 						s.setUser(user);
 					}
 					ur.close();
@@ -193,8 +198,11 @@ public class WeiboDao extends DaoBase{
 	public int saveStatus(Status s) throws SQLException{
 		int id = -1;
 		int userId =-1 ;
-		if(s.getRetweetedStatus()!=null)
+		if(s.getRetweetedStatus()!=null){
+			LOG.debug("jc before filter emoji text=:\""+s.getRetweetedStatus().getText()+"\"");
+			LOG.debug("jc after filter emoji text=:\""+StringUtil.filterEmoji(s.getRetweetedStatus().getText())+"\"");
 			id = saveStatus(s.getRetweetedStatus()); 
+		}
 		if(s.getUser()!=null)
 			userId = saveUser(s.getUser()); 
 		Source source = s.getSource();
@@ -261,7 +269,7 @@ public class WeiboDao extends DaoBase{
 		pstmt.setTimestamp(25,new Timestamp((new Date()).getTime()));				
 		pstmt.executeUpdate();
 		pstmt.close();
-		count++;	
+		saveCount++;	
 		sql = "select id from weibo w where w.weibo_id = ?;";		
 		LOG.debug("select id of WEIBO,sql:"+sql);
 		pstmt = conn.prepareStatement(sql);

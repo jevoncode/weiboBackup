@@ -1,0 +1,64 @@
+.WB_media_expand{
+	border-width:1px;
+	border-style:solid;
+	padding:10px 20px 10px;
+	margin:5px 0 15px;
+	border-radius:3px;
+}
+.S_line1{
+	border-color:#885A62;
+}
+.S_bg1{
+	background-color:#EEEEEE;
+}
+
+.WB_arrow{
+	position:absolute;
+	z-index: 0;
+	margin:18px 0 0;
+	width:22px;
+	cursor:default;
+}
+span{
+	margin:-11px 0 0;
+}
+
+.WB_info{
+	
+}
+.WB_media_expand .WB_media_list{
+	padding: 0 0 10px;
+}
+
+.lotspic_Media{
+	display:inline-block;
+	vertical-align: top;
+	overflow: hidden;	
+}
+.lotspic_list{
+	float:left;
+	width:255px;
+	margin-left:-5px;
+	font-size:0;
+}
+.lotspic_list li img{
+	width:80px;
+	height:80px;
+}
+.WB_media_list li img{
+	vertical-align: top;
+	display: inline-block;
+}
+.lotspic_list li{
+	float: left;
+	display: inline;
+	width:80px;
+	height:80px;
+	margin:5px 0 0 5px;
+	overflow:hidden;
+	position: relative;
+}
+.WB_media_list li{
+	vertical-align: top; 
+	display:inline;
+}

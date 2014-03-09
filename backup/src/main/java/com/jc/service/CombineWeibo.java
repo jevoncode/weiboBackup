@@ -57,36 +57,23 @@ public class CombineWeibo{
 		int end = temp.indexOf("}",begin);
 		while(begin!=-1){
 			String name = temp.substring(begin+2,end);
-			if(name.split("\\.").length<3){
-				String value = getValue(status,name);
-				name = name.replace(".","\\u002E");
-				//LOG.debug("regex:"+"\\$\\{"+name+"\\}");
-				value = escapeChar(value);
-				debugBeforeTemp = temp;
-				try{
-					temp = temp.replaceFirst("\\u0024\\u007B"+name+"\\u007D",value);
-					debugAfterTemp = temp;
-				}catch(IllegalArgumentException e){
-					//LOG.debug("temp which before replaced:"+debugBeforeTemp);
-					//LOG.debug("replace value:"+value);
-					//LOG.debug("temp which after replaced:"+debugAfterTemp);
-					throw e;
-				}
-			}else{ //retweeted status combine
-				String value = getValue(status.getRetweetedStatus(),name);
-				name = name.replace(".","\\u002E");
-				//LOG.debug("regex:"+"\\$\\{"+name+"\\}");
-				value = escapeChar(value);
-				debugBeforeTemp = temp;
-				try{
-					temp = temp.replaceFirst("\\u0024\\u007B"+name+"\\u007D",value);
-					debugAfterTemp = temp;
-				}catch(IllegalArgumentException e){
-					//LOG.debug("temp which before replaced:"+debugBeforeTemp);
-					//LOG.debug("replace value:"+value);
-					//LOG.debug("temp which after replaced:"+debugAfterTemp);
-					throw e;
-				}
+			String value = "";
+			if(name.split("\\.").length<3)
+				value = getValue(status,name);
+			else
+				value = getValue(status.getRetweetedStatus(),name);
+			name = name.replace(".","\\u002E");
+			//LOG.debug("regex:"+"\\$\\{"+name+"\\}");
+			value = escapeChar(value);
+			debugBeforeTemp = temp;
+			try{
+				temp = temp.replaceFirst("\\u0024\\u007B"+name+"\\u007D",value);
+				debugAfterTemp = temp;
+			}catch(IllegalArgumentException e){
+				//LOG.debug("temp which before replaced:"+debugBeforeTemp);
+				//LOG.debug("replace value:"+value);
+				//LOG.debug("temp which after replaced:"+debugAfterTemp);
+				throw e;
 			}
 			begin = temp.indexOf("${");
 			end = temp.indexOf("}",begin);

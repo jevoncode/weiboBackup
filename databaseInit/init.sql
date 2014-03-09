@@ -15,7 +15,7 @@ create table weibo(
 	weibo_id varchar(50),
 	mid varchar(50),
 	idstr bigint,
-	weibo_text blob,
+	weibo_text text,
 	weibo_source_id int,
 	favorited char(1),
 	truncated char(1),
