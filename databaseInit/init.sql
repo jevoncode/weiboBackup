@@ -35,6 +35,7 @@ create table weibo(
 	annotation varchar(500),
 	mlevel int,
 	visible_id int,
+	pic_urls varchar(5000),
 	created_time timestamp
 ) ;
 drop table weibo_source;

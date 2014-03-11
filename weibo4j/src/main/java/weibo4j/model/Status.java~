@@ -3,6 +3,8 @@ package weibo4j.model;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import weibo4j.http.Response;
 import weibo4j.org.json.JSONArray;
@@ -12,7 +14,7 @@ import weibo4j.org.json.JSONObject;
 public class Status extends WeiboResponse implements java.io.Serializable {
 
 	private static final long serialVersionUID = -8795691786466526420L;
-
+	private final Logger LOG = LoggerFactory.getLogger(Status.class);
 	private User user = null;                            //作者信息
 	private Date createdAt;                              //status创建时间
 	private String id;                                   //status id
@@ -123,7 +125,8 @@ public class Status extends WeiboResponse implements java.io.Serializable {
 
 	public void setPicUrls(String[] picUrls){
 		this.picUrls = picUrls;
-		StringBuffer sb = new StringBuffer(); 
+		StringBuffer sb = new StringBuffer();
+		LOG.debug("jc status_id:"+id+",picUrls.length="+picUrls.length);
 		if(picUrls.length>1){
 			sb.append("<div class=\"lotspic_Media clearfix\" ><ul class=\"lotspic_list clearfix\">"); 
 			for(int i=0;i<picUrls.length;i++)

@@ -6,7 +6,7 @@
 					<div class="WB_text" nick-name="${status.inReplyToScreenName}"> ${status.text}</div>
 					<ul class="WB_media_list clearfix">
 						<li>
-							
+							${status.retweetedStatus.mediaList}
 						</li>
 					</ul>
 					<div class="map_data">

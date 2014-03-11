@@ -41,4 +41,16 @@ public class StringUtil{
 		else
 			return buf.toString();
 	}
+	public static String toLineByComma(String[] array){
+		if(array==null||array.length==0)
+			return "";
+		StringBuffer sb = new StringBuffer();
+		String delim = "";
+		for(String s:array){
+			sb.append(delim).append(s);
+			delim = ",";
+		}
+		return sb.toString();
+	}
+
 }

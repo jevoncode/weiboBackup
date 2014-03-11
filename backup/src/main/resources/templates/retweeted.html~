@@ -27,7 +27,7 @@
 							<li>
 								<!-- img之间不能加空格 -->
 								<!-- 九宫格 -->
-								  mediaList}
+								  ${status.retweetedStatus.mediaList
 								<!-- 九宫格 -->
 							</li>
 						</ul> 

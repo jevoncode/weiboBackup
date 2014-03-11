@@ -59,7 +59,8 @@ public class WeiboDao extends DaoBase{
 						"w.reposts_count,"+
 						"w.comments_count,"+
 						"w.retweeted_weibo_id,"+
-						"w.user_id"+
+						"w.user_id,"+
+						"w.pic_urls"+
 						" FROM weibo w"+
 						" where not exists("+
 						" 		select 1 from weibo w2 "+
@@ -83,6 +84,7 @@ public class WeiboDao extends DaoBase{
 				s.setCommentsCount(rs.getInt(8));
 				int retweetedId = rs.getInt(9);
 				int userId = rs.getInt(10);
+				s.setPicUrls(rs.getString(11).split(","));
 				if(retweetedId!=-1){
 					try{
 					String retweetedSql = "SELECT w.created_at,"+
@@ -92,7 +94,8 @@ public class WeiboDao extends DaoBase{
 						"w.geo,"+
 						"w.longitude,"+
 						"w.reposts_count,"+
-						"w.comments_count "+
+						"w.comments_count,"+
+						"w.pic_urls"+
 						" FROM weibo w"+
 						" WHERE w.id =?;";
 					LOG.debug("get retweeted WeiBo:"+retweetedSql);
@@ -109,6 +112,7 @@ public class WeiboDao extends DaoBase{
 						retweeted.setLongitude(rsR.getDouble(6));
 						retweeted.setRepostsCount(rsR.getInt(7));
 						retweeted.setCommentsCount(rsR.getInt(8));
+						retweeted.setPicUrls(rsR.getString(9).split(","));
 						s.setRetweetedStatus(retweeted);
 					}
 					rsR.close();
@@ -238,6 +242,7 @@ public class WeiboDao extends DaoBase{
 					"mlevel=?,"+
 					"visible_id=?,"+
 					"user_id =?,"+
+					"pic_urls=?,"+
 					"created_time=?;";
 			
 		LOG.debug("begin save Weibo just swooped,sql:"+sql);
@@ -266,7 +271,8 @@ public class WeiboDao extends DaoBase{
 		pstmt.setInt(22,s.getMlevel());
 		pstmt.setInt(23,visibleId);
 		pstmt.setInt(24,userId);
-		pstmt.setTimestamp(25,new Timestamp((new Date()).getTime()));				
+		pstmt.setString(25,StringUtil.toLineByComma(s.getPicUrls()));
+		pstmt.setTimestamp(26,new Timestamp((new Date()).getTime()));				
 		pstmt.executeUpdate();
 		pstmt.close();
 		saveCount++;	
