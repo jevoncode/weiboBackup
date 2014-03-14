@@ -1,3 +1,5 @@
 build
 .gradle
-backup/src/main/java/com/jc/dao/Database.java
+jc-backup/src/main/java/com/jc/dao/Database.java
+target
+.settings
