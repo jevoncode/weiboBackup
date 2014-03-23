@@ -2,7 +2,7 @@ package com.jc.model;
 
 import java.util.Date;
 
-public class User{
+public class JcUser{
 	private Long id;
 	private String session;
 	private String code;

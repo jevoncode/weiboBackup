@@ -53,4 +53,7 @@ public class StringUtil{
 		return sb.toString();
 	}
 
+	public static String upperCaseFirst(String letters){
+		return letters.substring(0,1).toUpperCase()+letters.substring(1);
+	}
 }
