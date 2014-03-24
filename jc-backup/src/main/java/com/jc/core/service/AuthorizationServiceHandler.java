@@ -5,14 +5,18 @@ import org.slf4j.LogFactory;
 import weibo4j.Oauth;
 import weibo4j.model.WeiboException;
 import weibo4j.http.AccessToken;
-import com.jc.model.core.JcUser;
+import com.jc.core.domain.JcUser;
 import com.jc.persistence.JcUserPersistenceService;
 
 public class AuthorizationServiceHandler{
 
 	private static final Logger LOG = LoggerFactory.getLogger(AuthorizationServiceHandler.class);
-	private Oauth oauth ;
+	private Oauth oauth = new Oauth();
 	private JcUserPersistenceService jcUserPersistenceService;
+	
+	public AuthorizationServiceHandler(JcUserPersistenceService jcUserPersistenceService){
+		this.jcUserPersistenceService = jcUserPersistenceService;
+	}
 	
 	public String assembleOAuthURL(){ 
 		String oauthURL = "";

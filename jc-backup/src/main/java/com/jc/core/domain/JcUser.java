@@ -1,4 +1,4 @@
-package com.jc.model;
+package com.jc.core.domain;
 
 import java.util.Date;
 

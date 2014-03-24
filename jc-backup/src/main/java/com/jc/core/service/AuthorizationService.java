@@ -1,7 +1,7 @@
 public com.jc.core.service;
 
 
-import com.jc.model.core.JcUser;
+import com.jc.core.domain.JcUser;
 
 public interface AuthorizationService{
 	

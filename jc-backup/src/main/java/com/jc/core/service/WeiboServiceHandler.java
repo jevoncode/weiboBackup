@@ -13,7 +13,7 @@ import java.io.IOException;
 import weibo4j.Timeline;
 import weibo4j.model.StatusWapper;
 import weibo4j.model.WeiboException;
-import com.jc.model.JcUser;
+import com.jc.core.domain.JcUser;
 import com.jc.persistence.JcUserPersistenceService;
 import com.jc.persistence.WeiboPersistenceService;
 
@@ -23,6 +23,11 @@ public class WeiboServiceHandler implements WeiboService {
 	// private WeiboDao weiboDao = new WeiboDao();
 	private WeiboPersistenceService weiboPersistenceService;
 	private JcUserPersistenceService jcUserPersistenceService;
+	
+	public WeiboServiceHandler(WeiboPersistenceService weiboPersistenceService,JcUserPersistenceService jcUserPersistenceService){
+		this.weiboPersistenceService = weiboPersistenceService;
+		this.jcUserPersistenceService = jcUserPersistenceService;
+	}
 
 	private int countPerPage = 100;
 
@@ -80,11 +85,11 @@ public class WeiboServiceHandler implements WeiboService {
 		return true;
 	}
 
-	public String compositeWeibo() {
+	public String compositeWeibo(JcUser jcUser) {
 		StringBuffer cs = new StringBuffer();
 		URL url = null;
 		String weibo = "";
-		List<Status> statuses = weiboPersistenceService.getAllTop();
+		List<Status> statuses = weiboPersistenceService.getAllTop(jcUser.getId);
 		for (Status s : statuses) {
 			String resource = "/templates/status.html";
 			if (s.getRetweetedStatus() != null) {
