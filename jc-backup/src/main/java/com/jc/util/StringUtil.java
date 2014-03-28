@@ -56,4 +56,11 @@ public class StringUtil{
 	public static String upperCaseFirst(String letters){
 		return letters.substring(0,1).toUpperCase()+letters.substring(1);
 	}
+	
+	public static String escapeChar(String content){
+		String result = null;
+		//$ want to be replaced \$ ,it must use \\\\\\$ to replace it,because one backslash should use \\\ to escape, and  $ shloud be replaced \\$.
+		result = content.replaceAll("\\u0024","");
+		return result;
+	}
 }

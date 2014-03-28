@@ -1,7 +1,10 @@
-public com.jc.core.service;
+package com.jc.core.service;
+
+import com.jc.core.domain.JcUser;
 
 public interface WeiboService{
 	
-	public int ObtainWeibo(String sessionId);
-	public String compositeWeibo() ;
+	public int obtainWeibo(String sessionId);
+	
+	public String compositeWeibo(JcUser jcUser) ;
 }

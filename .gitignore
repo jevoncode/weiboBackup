@@ -3,3 +3,4 @@ build
 jc-backup/src/main/java/com/jc/dao/Database.java
 target
 .settings
+.project

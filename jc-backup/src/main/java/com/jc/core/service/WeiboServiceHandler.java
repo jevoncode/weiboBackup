@@ -10,17 +10,23 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import weibo4j.Timeline;
+import weibo4j.model.Status;
 import weibo4j.model.StatusWapper;
 import weibo4j.model.WeiboException;
 import com.jc.core.domain.JcUser;
-import com.jc.persistence.JcUserPersistenceService;
-import com.jc.persistence.WeiboPersistenceService;
+import com.jc.util.StringUtil;
+import com.jc.util.DataUtil;
+import com.jc.util.ReflectionUtil;
+import com.jc.persistence.service.JcUserPersistenceService;
+import com.jc.persistence.service.WeiboPersistenceService;
 
 public class WeiboServiceHandler implements WeiboService {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(WeiboServiceHandler.class);
 	// private WeiboDao weiboDao = new WeiboDao();
+	private static final int COUNT_PER_PAGE = 100;
 	private WeiboPersistenceService weiboPersistenceService;
 	private JcUserPersistenceService jcUserPersistenceService;
 	
@@ -28,33 +34,29 @@ public class WeiboServiceHandler implements WeiboService {
 		this.weiboPersistenceService = weiboPersistenceService;
 		this.jcUserPersistenceService = jcUserPersistenceService;
 	}
-
-	private int countPerPage = 100;
-
+	/**
+	 * call Weibo api to obtain weibos
+	 * return count weibos have been saved
+	 */
+	@Override
 	public int obtainWeibo(String sessionId) {
-		int count;
+		int count = 0;
 		int swoopCount = 0;
-		User user = null;
+		JcUser jcUser = null;
 		int limitCount = 0;
-		int total;
-		int totalPage;
+		int total = 0;
+		int totalPage =0;
 		int page = 2;
-		StatusWapper status;
+		StatusWapper status =null;
 		Timeline tm = new Timeline();
-		// get user's AccessToken by sessionId.
-		try {
-			user = jcUserPersistenceService.getUserBySessionId(sessionId);
-		} catch (SQLException e) {
-			// LOG.error(e.printStackTrace());
-			LOG.error("we did not save the user who sessionId=" + sessionId
-					+ ",:" + e);
-		}
-		if (user == null)
-			return false;
+		// get user's AccessToken by sessionId. 
+		jcUser = jcUserPersistenceService.getUserBySessionId(sessionId); 
+		if (jcUser == null)
+			return 0;
 		// begin to obtain weibo from weibo api.
-		tm.client.setToken(user.getAccessToken());
+		tm.client.setToken(jcUser.getAccessToken());
 		try {
-			status = tm.getUserTimeline(countPerPage, 1);
+			status = tm.getUserTimeline(COUNT_PER_PAGE, 1);
 		} catch (WeiboException e) {
 			LOG.error("occured a exception when obtaining weibo use weibo api"
 					+ e);
@@ -70,7 +72,7 @@ public class WeiboServiceHandler implements WeiboService {
 		// each request.
 		for (; page < totalPage; page++) {
 			try {
-				status = tm.getUserTimeline(countPerPage, page);
+				status = tm.getUserTimeline(COUNT_PER_PAGE, page);
 			} catch (WeiboException e) {
 				LOG.error("occured a exception when obtaining weibo use weibo api"
 						+ e);
@@ -82,14 +84,18 @@ public class WeiboServiceHandler implements WeiboService {
 		}
 		LOG.debug("obtained " + swoopCount + " Weibos");
 		LOG.debug("save " + count + " Weibos");
-		return true;
+		return count;
 	}
 
+	/**
+	 * return HTML style weibo
+	 */
+	@Override
 	public String compositeWeibo(JcUser jcUser) {
 		StringBuffer cs = new StringBuffer();
 		URL url = null;
 		String weibo = "";
-		List<Status> statuses = weiboPersistenceService.getAllTop(jcUser.getId);
+		List<Status> statuses = weiboPersistenceService.getAllTop(jcUser);
 		for (Status s : statuses) {
 			String resource = "/templates/status.html";
 			if (s.getRetweetedStatus() != null) {
@@ -99,19 +105,19 @@ public class WeiboServiceHandler implements WeiboService {
 			try {
 				cs.append(formatWeibo(url.toURI(), s));
 			} catch (URISyntaxException e) {
-				LOG.error(e);
+				LOG.error(e.getMessage());
 			}
 		}
 		url = this.getClass().getResource("/templates/weibo.html");
 		try {
 			weibo = DataUtil.readFlatFile(new File(url.toURI()));
 		} catch (FileNotFoundException e) {
-			LOG.error("not found file:/templates/weibo.html");
+			LOG.error("not found file:/templates/weibo.html"+ e);
 		} catch (IOException e2) {
 			LOG.error("occured exception read file '/templates/weibo.html' \n"
-					+ e);
+					+ e2);
 		} catch (URISyntaxException e3) {
-			LOG.error(e3);
+			LOG.error(e3.getMessage());
 		}
 		weibo = weibo.replaceAll("\\$\\{content\\}", cs.toString());
 		return weibo;
@@ -120,16 +126,16 @@ public class WeiboServiceHandler implements WeiboService {
 	public String formatWeibo(URI fileUri,Status status){
 //		String debugBeforeTemp = null;
 //		String debugAfterTemp = null;
-		String template;
+		String template = "";
 		int begin;
 		int end;
 
 		try{
 			template = DataUtil.readFlatFile(new File(fileUri));
 		}catch(FileNotFoundException e){
-			LOG.debug("not found file:"+fileUri);
+			LOG.debug("not found file:"+fileUri+"' \n"+e);
 		}catch(IOException e2){
-			LOG.debug("occured exception read file '"+fileUri+""' \n"+e);
+			LOG.debug("occured exception read file '"+fileUri+"' \n"+e2);
 		}
 		
 		begin = template.indexOf("${");
@@ -139,9 +145,9 @@ public class WeiboServiceHandler implements WeiboService {
 			String value = "";
 			try{
 			if(name.split("\\.").length<3)
-				value = getValue(status,name);
+				value = ReflectionUtil.getValue(status,name);
 			else
-				value = getValue(status.getRetweetedStatus(),name);
+				value = ReflectionUtil.getValue(status.getRetweetedStatus(),name);
 			}catch(NoSuchMethodException e1){
 				LOG.error("occured a exception status'id="+status.getId()+",:"+e1);
 			}catch(IllegalAccessException e2){

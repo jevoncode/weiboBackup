@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public Corefig{
+public class CoreConfig{
 	
 	@Bean
 	public AuthorizationService authorizationService(JcUserPersistenceService jcUserPersistenceService){
