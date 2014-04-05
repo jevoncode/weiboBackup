@@ -1,4 +1,4 @@
-package com.jc.service;
+package com.jc.core.service;
 
 public interface IndexService{
 	public String showAboutMe() ;

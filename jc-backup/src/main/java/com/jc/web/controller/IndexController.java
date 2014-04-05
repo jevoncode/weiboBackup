@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.jc.service.IndexService;
+import com.jc.core.service.IndexService;
 
 @Controller
 @RequestMapping("/")
@@ -19,11 +19,11 @@ public class IndexController{
 	@Autowired
 	private IndexService indexService;
 	
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value="",method = RequestMethod.GET)
 	@ResponseBody
 	public String showMe(){
 		LOG.debug("WeboBackup directly to ResonseBody");
 		return indexService.showAboutMe();
-	}
+	} 
 	
 }

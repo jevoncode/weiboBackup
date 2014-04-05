@@ -1,6 +1,6 @@
 package com.jc.web.controller;
 
-import com.jc.service.IndexService;
+import com.jc.core.service.IndexService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class IndexControllerTest{
 	
-	private static final String RESPONSE_BODY = "Hello,my name is WeiboBackup Jc,I am a backup tool to backup your Weibo data";
+	private static final String RESPONSE_BODY = "Welcom to JC weibo backup app.";
 	
 	MockMvc mockMvc;
 	

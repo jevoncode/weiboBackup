@@ -22,38 +22,7 @@
                       http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
   version="3.0"
   metadata-complete="true">
-	<servlet>
-        <servlet-name>Login</servlet-name>
-        <servlet-class>com.jc.servlet.LoginServlet</servlet-class>
-    </servlet>
-	<servlet>
-		<servlet-name>ObtainOAuth</servlet-name>
-		<servlet-class>com.jc.servlet.ObtainOAuth</servlet-class>	
-	</servlet>
-	<servlet>
-		<servlet-name>backup</servlet-name>
-		<servlet-class>com.jc.servlet.BackupServlet</servlet-class>	
-	</servlet>
-	<servlet>
-		<servlet-name>down</servlet-name>
-		<servlet-class>com.jc.servlet.DownloadServlet</servlet-class>	
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>down</servlet-name>
-		<url-pattern>/download</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>backup</servlet-name>
-		<url-pattern>/backup</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>ObtainOAuth</servlet-name>
-		<url-pattern>/obtainoauth</url-pattern>
-	</servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>Login</servlet-name>
-        <url-pattern>/login</url-pattern>
-    </servlet-mapping>
+	 
   <display-name>Welcome to Tomcat</display-name>
   <description>
      Welcome to Tomcat

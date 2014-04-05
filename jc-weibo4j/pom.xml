@@ -29,13 +29,19 @@
   		<artifactId>jackson-core-asl</artifactId> 
   	</dependency>
   </dependencies>
+  <distributionManagement>
+  	<repository>
+  		<id>jcRepository</id>
+  		<url>http://localhost:8081/nexus-2.7.2-03/content/repositories/jcRepository/</url>
+  	</repository>
+  </distributionManagement>
   <build>
   	<plugins>
   		<plugin>
     		<groupId>org.apache.maven.plugins</groupId>
     		<artifactId>maven-compiler-plugin</artifactId> 
 		</plugin>
-  	</plugins>
+  	</plugins>  
   </build> 
 </project>
  
