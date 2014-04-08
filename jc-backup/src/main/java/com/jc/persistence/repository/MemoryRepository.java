@@ -2,6 +2,7 @@ package com.jc.persistence.repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 import com.jc.persistence.domain.JcConnection;
@@ -31,6 +32,9 @@ public class MemoryRepository implements Repository {
 	 */
 	public static int add(String name,Object record){
 		List<Object> table = data.get(name);
+		if(table==null){
+			table = new ArrayList<Object>();
+		}
 		table.add(record);
 		List<Object> success = data.put(name,table);
 		return table.size()-1;

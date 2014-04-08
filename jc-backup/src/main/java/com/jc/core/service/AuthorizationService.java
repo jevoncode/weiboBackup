@@ -7,5 +7,5 @@ public interface AuthorizationService{
 	
 	public String assembleOAuthURL();
 	
-	public JcUser obtainAuthorization(JcUser jcUser);
+	public boolean obtainAuthorization(JcUser jcUser);
 }

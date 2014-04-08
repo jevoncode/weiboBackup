@@ -30,7 +30,7 @@ public class AuthorizationServiceHandler implements AuthorizationService{
 	}
 	
 	@Override
-	public JcUser obtainAuthorization(JcUser jcUser){
+	public boolean obtainAuthorization(JcUser jcUser){
 		LOG.debug("Begin to get accessToken,jcUser's code="+jcUser.getCode()+
 					" and sessionId="+jcUser.getSession());
 		AccessToken accessToken ;
@@ -38,11 +38,11 @@ public class AuthorizationServiceHandler implements AuthorizationService{
 			accessToken = oauth.getAccessTokenByCode(jcUser.getCode()); 
 		}catch(WeiboException e){
 			LOG.error("occured a excepion when we were obtaining authorization:"+e);
-			return null;
+			return false;
 		}
 		jcUser.setAccessToken(accessToken.getAccessToken());
 		jcUserPersistenceService.save(jcUser);
-		return jcUser;
+		return jcUser.getAccessToken()!=null&&jcUser.getAccessToken().length()>0;
 	}
 	
 }

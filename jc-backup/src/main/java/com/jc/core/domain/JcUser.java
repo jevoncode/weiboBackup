@@ -1,8 +1,14 @@
 package com.jc.core.domain;
 
 import java.util.Date;
+import java.io.Serializable;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.stereotype.Component;
 
-public class JcUser{
+@Component
+@Scope(value="session",proxyMode=ScopedProxyMode.TARGET_CLASS)
+public class JcUser implements Serializable {
 	private Long id;
 	private String session;
 	private String code;
