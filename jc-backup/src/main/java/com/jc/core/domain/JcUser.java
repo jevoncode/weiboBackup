@@ -16,6 +16,7 @@ public class JcUser implements Serializable {
 	private int expiresIn;
 	private long uid;
 	private Date createdTime;
+	private String verificationCode;
 	public void setId(Long id){
 		this.id = id;
 	}
@@ -57,5 +58,11 @@ public class JcUser implements Serializable {
 	}
 	public long getUid(){
 		return this.uid;
+	}
+	public void setVerificationCode(String verificationCode){
+		this.verificationCode = verificationCode;
+	}
+	public String getVerificationCode(){
+		return verificationCode;
 	}
 }

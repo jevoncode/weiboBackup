@@ -1,12 +1,12 @@
 package com.jc.persistence.service;
-
-import weibo4j.model.Status;
+ 
 import java.util.List;
 import com.jc.core.domain.JcUser;
+import com.jc.core.domain.JcStatus;
 
 public interface WeiboPersistenceService{
 
-	public int saveStatuses(List<Status> statuses); 
-	public List<Status> getAllTop(JcUser jcUser);
-	public int save(Status s); 
+	public int saveStatuses(List<JcStatus> statuses); 
+	public List<JcStatus> getAllTop(JcUser jcUser);
+	public int save(JcStatus s); 
 }

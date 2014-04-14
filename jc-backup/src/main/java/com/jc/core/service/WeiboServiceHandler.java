@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.io.FileNotFoundException;
@@ -16,6 +17,7 @@ import weibo4j.model.Status;
 import weibo4j.model.StatusWapper;
 import weibo4j.model.WeiboException;
 import com.jc.core.domain.JcUser;
+import com.jc.core.domain.JcStatus;
 import com.jc.util.StringUtil;
 import com.jc.util.DataUtil;
 import com.jc.util.ReflectionUtil;
@@ -39,48 +41,61 @@ public class WeiboServiceHandler implements WeiboService {
 	 * return count weibos have been saved
 	 */
 	@Override
-	public int obtainWeibo(String sessionId) {
+	public int obtainWeibo(JcUser jcUser) {
 		int count = 0;
-		int swoopCount = 0;
-		JcUser jcUser = null;
+		int swoopCount = 0; 
 		int limitCount = 0;
 		int total = 0;
 		int totalPage =0;
 		int page = 2;
-		StatusWapper status =null;
+		StatusWapper statusWapper =null;
+		List<JcStatus> jcStatuses =null; 
 		Timeline tm = new Timeline();
 		// get user's AccessToken by sessionId. 
-		jcUser = jcUserPersistenceService.getUserBySessionId(sessionId); 
+		jcUser = jcUserPersistenceService.getUserBySessionId(jcUser.getSession()); 
 		if (jcUser == null)
 			return 0;
 		// begin to obtain weibo from weibo api.
 		tm.client.setToken(jcUser.getAccessToken());
 		try {
-			status = tm.getUserTimeline(COUNT_PER_PAGE, 1);
+			statusWapper = tm.getUserTimeline(COUNT_PER_PAGE, 1);
+			jcStatuses = new ArrayList<JcStatus>();
+			for(Status s:statusWapper.getStatuses()){
+				JcStatus js = (JcStatus)s;
+				js.setJcUser(jcUser);
+				jcStatuses.add(js);
+			}
 		} catch (WeiboException e) {
 			LOG.error("occured a exception when obtaining weibo use weibo api"
 					+ e);
 		}
 		LOG.debug(++limitCount + "st to invoke UserTimeline interface.");
-		count += weiboPersistenceService.saveStatuses(status.getStatuses());
-		swoopCount += status.getStatuses().size();
+//		count += weiboPersistenceService.saveStatuses(statusWapper.getStatuses());
+		count += weiboPersistenceService.saveStatuses(jcStatuses);
+		swoopCount += statusWapper.getStatuses().size();
 
-		total = (int) (status.getTotalNumber()); // total weibos that user have
+		total = (int) (statusWapper.getTotalNumber()); // total weibos that user have
 		totalPage = total % 100 == 0 ? total / 100 : total / 100 + 1;
 
 		// because weibo api has a limit that only 100 weibos can be obtained
 		// each request.
 		for (; page < totalPage; page++) {
 			try {
-				status = tm.getUserTimeline(COUNT_PER_PAGE, page);
+				statusWapper = tm.getUserTimeline(COUNT_PER_PAGE, page);
+				jcStatuses = new ArrayList<JcStatus>();
+				for(Status s:statusWapper.getStatuses()){
+					JcStatus js = (JcStatus)s;
+					js.setJcUser(jcUser);
+					jcStatuses.add(js);
+				}
 			} catch (WeiboException e) {
 				LOG.error("occured a exception when obtaining weibo use weibo api"
 						+ e);
 			}
 			LOG.debug(++limitCount + "st to invoke UserTimeline interface.");
 			// weiboDao = new WeiboDao(); // TODO optimize
-			weiboPersistenceService.saveStatuses(status.getStatuses());
-			swoopCount += status.getStatuses().size();
+			weiboPersistenceService.saveStatuses(jcStatuses);
+			swoopCount += statusWapper.getStatuses().size();
 		}
 		LOG.debug("obtained " + swoopCount + " Weibos");
 		LOG.debug("save " + count + " Weibos");
@@ -95,8 +110,8 @@ public class WeiboServiceHandler implements WeiboService {
 		StringBuffer cs = new StringBuffer();
 		URL url = null;
 		String weibo = "";
-		List<Status> statuses = weiboPersistenceService.getAllTop(jcUser);
-		for (Status s : statuses) {
+		List<JcStatus> statuses = weiboPersistenceService.getAllTop(jcUser);
+		for (JcStatus s : statuses) {
 			String resource = "/templates/status.html";
 			if (s.getRetweetedStatus() != null) {
 				resource = "/templates/retweeted.html";
@@ -123,7 +138,7 @@ public class WeiboServiceHandler implements WeiboService {
 		return weibo;
 	}
 
-	public String formatWeibo(URI fileUri,Status status){
+	public String formatWeibo(URI fileUri,JcStatus status){
 //		String debugBeforeTemp = null;
 //		String debugAfterTemp = null;
 		String template = "";
