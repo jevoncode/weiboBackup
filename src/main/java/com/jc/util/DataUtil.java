@@ -36,5 +36,14 @@ public class DataUtil{
 		fos.write(content.getBytes());
 		fos.close();
 	}
+	
+	public static void writeImage(File directory,String fileName,byte[] data) throws FileNotFoundException,IOException{
+		if(!directory.exists())
+			directory.mkdir();
+		File img = new File(directory,fileName);
+		FileOutputStream out = new FileOutputStream(img);
+		out.write(data);
+		out.close();
+	}
 
 }

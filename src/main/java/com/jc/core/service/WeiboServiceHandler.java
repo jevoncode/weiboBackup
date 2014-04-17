@@ -25,6 +25,7 @@ import com.jc.weibo4j.exception.WeiboException;
 import com.jc.core.domain.JcUser;
 import com.jc.util.StringUtil;
 import com.jc.util.DataUtil;
+import com.jc.util.NetUtil;
 import com.jc.util.FileUtils;
 import com.jc.util.ReflectionUtil;
 import com.jc.persistence.service.JcUserPersistenceService;
@@ -39,6 +40,7 @@ public class WeiboServiceHandler implements WeiboService {
 	private static final int COUNT_PER_PAGE = 100;
 	private WeiboPersistenceService weiboPersistenceService;
 	private JcUserPersistenceService jcUserPersistenceService;
+	private String path = ""; //which save weibo file including html,images
 
 	public WeiboServiceHandler(WeiboPersistenceService weiboPersistenceService,
 			JcUserPersistenceService jcUserPersistenceService) {
@@ -121,6 +123,25 @@ public class WeiboServiceHandler implements WeiboService {
 				cs.append(formatWeibo(url.toURI(), s));
 			} catch (URISyntaxException e) {
 				LOG.error(e.getMessage());
+			}
+			//download pictures
+			for(String imageUrl:s.getPicUrls()){
+				try{
+				//download thumbnail image
+				byte[] thumbnailImage = NetUtil.readImage(imageUrl); 
+				File thumbnailDirectory = new File(path,"thumbnail");
+				DataUtil.writeImage(thumbnailDirectory, imageUrl.substring(
+						imageUrl.lastIndexOf("/"), imageUrl.length()),thumbnailImage);
+				//download large image
+				imageUrl = imageUrl.replaceFirst("thumbnail", "large");
+				byte[] largeImage = NetUtil.readImage(imageUrl); 
+				File largeDirectory = new File(path,"large");
+				DataUtil.writeImage(largeDirectory, imageUrl.substring(
+						imageUrl.lastIndexOf("/"), imageUrl.length()),largeImage);
+				}catch (IOException e) {
+					LOG.error("occured exception when download images' \n"
+							+ e);
+				}
 			}
 		}
 		url = this.getClass().getResource("/templates/weibo.html");
@@ -210,20 +231,21 @@ public class WeiboServiceHandler implements WeiboService {
 	@Override
 	public JcUser packageZip(JcUser jcUser, ServletContext context) {
 		try {
-			String weibo = compositeWeibo(jcUser);
 			SimpleDateFormat sdf = new SimpleDateFormat("/yyyy/MM/dd/");
 			String basePath = context.getRealPath("/WEB-INF/weibo_files");
 			String subPath = sdf.format(new Date());
-			String path = basePath + subPath + UUID.randomUUID().toString(); // avoids
-																				// same
-																				// name
-																				// directory
-
+			path = basePath + subPath + UUID.randomUUID().toString(); // avoids
 			// if not exists then create it
 			File dir = new File(path);
 			if (!dir.exists()) {
 				dir.mkdirs();
 			}
+			String weibo = compositeWeibo(jcUser);
+																				// same
+																				// name
+																				// directory
+
+			
 
 			byte[] data = weibo.getBytes();
 			BufferedOutputStream stream = new BufferedOutputStream(
@@ -238,10 +260,11 @@ public class WeiboServiceHandler implements WeiboService {
 			} catch (URISyntaxException e3) {
 				LOG.error(e3.getMessage());
 			}
-			path = path + ".zip";
-			File zip = new File(path);
+			//package files in zip
+			String zipPath = path + ".zip";
+			File zip = new File(zipPath);
 			FileUtils.zipFile(dir, zip);
-			jcUser.setZipPath(path);
+			jcUser.setZipPath(zipPath);
 		} catch (FileNotFoundException e) {
 			LOG.debug("not found file' \n" + e);
 		} catch (IOException e2) {
