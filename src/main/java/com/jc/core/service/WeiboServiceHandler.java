@@ -40,7 +40,7 @@ public class WeiboServiceHandler implements WeiboService {
 	private static final int COUNT_PER_PAGE = 100;
 	private WeiboPersistenceService weiboPersistenceService;
 	private JcUserPersistenceService jcUserPersistenceService;
-	private String path = ""; //which save weibo file including html,images
+	private String path = ""; // which save weibo file including html,images
 
 	public WeiboServiceHandler(WeiboPersistenceService weiboPersistenceService,
 			JcUserPersistenceService jcUserPersistenceService) {
@@ -113,10 +113,18 @@ public class WeiboServiceHandler implements WeiboService {
 		String weibo = "";
 		List<Status> statuses = weiboPersistenceService.getAllTop(jcUser);
 		for (Status s : statuses) {
-			LOG.debug("compositing weibo,status is:"+s.getId());
+
+			// download pictures
+			s = downloadImage(s);
+
+			LOG.debug("compositing weibo,status is:" + s.getId());
 			String resource = "/templates/status.html";
 			if (s.getRetweetedStatus() != null) {
 				resource = "/templates/retweeted.html";
+				// download pictures
+				if (s.getRetweetedStatus().getPicUrls() != null
+						&& s.getRetweetedStatus().getPicUrls().length > 0)
+					s.setRetweetedStatus(downloadImage(s.getRetweetedStatus()));
 			}
 			url = this.getClass().getResource(resource);
 			try {
@@ -124,25 +132,7 @@ public class WeiboServiceHandler implements WeiboService {
 			} catch (URISyntaxException e) {
 				LOG.error(e.getMessage());
 			}
-			//download pictures
-			for(String imageUrl:s.getPicUrls()){
-				try{
-				//download thumbnail image
-				byte[] thumbnailImage = NetUtil.readImage(imageUrl); 
-				File thumbnailDirectory = new File(path,"thumbnail");
-				DataUtil.writeImage(thumbnailDirectory, imageUrl.substring(
-						imageUrl.lastIndexOf("/"), imageUrl.length()),thumbnailImage);
-				//download large image
-				imageUrl = imageUrl.replaceFirst("thumbnail", "large");
-				byte[] largeImage = NetUtil.readImage(imageUrl); 
-				File largeDirectory = new File(path,"large");
-				DataUtil.writeImage(largeDirectory, imageUrl.substring(
-						imageUrl.lastIndexOf("/"), imageUrl.length()),largeImage);
-				}catch (IOException e) {
-					LOG.error("occured exception when download images' \n"
-							+ e);
-				}
-			}
+
 		}
 		url = this.getClass().getResource("/templates/weibo.html");
 		try {
@@ -241,11 +231,9 @@ public class WeiboServiceHandler implements WeiboService {
 				dir.mkdirs();
 			}
 			String weibo = compositeWeibo(jcUser);
-																				// same
-																				// name
-																				// directory
-
-			
+			// same
+			// name
+			// directory
 
 			byte[] data = weibo.getBytes();
 			BufferedOutputStream stream = new BufferedOutputStream(
@@ -260,7 +248,7 @@ public class WeiboServiceHandler implements WeiboService {
 			} catch (URISyntaxException e3) {
 				LOG.error(e3.getMessage());
 			}
-			//package files in zip
+			// package files in zip
 			String zipPath = path + ".zip";
 			File zip = new File(zipPath);
 			FileUtils.zipFile(dir, zip);
@@ -279,8 +267,40 @@ public class WeiboServiceHandler implements WeiboService {
 		try {
 			in = new FileInputStream(jcUser.getZipPath());
 		} catch (FileNotFoundException e) {
-			LOG.error("File "+jcUser.getZipPath()+" is not found."+e);
+			LOG.error("File " + jcUser.getZipPath() + " is not found." + e);
 		}
 		return in;
+	}
+
+	public Status downloadImage(Status s) {
+		String[] imageUrls = new String[s.getPicUrls().length];
+		int index = 0;
+		for (String imageUrl : s.getPicUrls()) {
+			try {
+				// download thumbnail image
+				byte[] thumbnailImage = NetUtil.readImage(imageUrl);
+				File thumbnailDirectory = new File(path, "thumbnail");
+				DataUtil.writeImage(
+						thumbnailDirectory,
+						imageUrl.substring(imageUrl.lastIndexOf("/"),
+								imageUrl.length()), thumbnailImage);
+				// download large image
+				String largeImageUrl = imageUrl.replaceFirst("thumbnail",
+						"large");
+				byte[] largeImage = NetUtil.readImage(largeImageUrl);
+				File largeDirectory = new File(path, "large");
+				DataUtil.writeImage(largeDirectory,
+						largeImageUrl.substring(largeImageUrl.lastIndexOf("/"),
+								largeImageUrl.length()), largeImage);
+				imageUrl = imageUrl.substring(
+						imageUrl.lastIndexOf("thumbnail"), imageUrl.length());
+				imageUrls[index++] = imageUrl;
+				LOG.debug("saved image:" + imageUrl);
+			} catch (IOException e) {
+				LOG.error("occured exception when download images' \n" + e);
+			}
+		}
+		s.setPicUrls(imageUrls);
+		return s;
 	}
 }
