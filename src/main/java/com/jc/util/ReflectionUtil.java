@@ -2,20 +2,33 @@ package com.jc.util;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
+import java.util.LinkedList;
 
-public class ReflectionUtil{
-	
-	
-	public static String getValue(Object obj,String name) throws NoSuchMethodException,IllegalAccessException,IllegalArgumentException,InvocationTargetException{
+public class ReflectionUtil {
+
+	public static String getValue(Object obj, LinkedList<String> names)
+			throws NoSuchMethodException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException {
 		String value = "";
-		String[] args = name.split("\\.");
-		int argLen = args.length;
-		//String objName = StringUtil.upperCaseFirst(args[0]);
 		Class clazz = obj.getClass();
-		//int index = clazz.getName().indexOf(objName); 
-		Method m = clazz.getMethod("get"+StringUtil.upperCaseFirst(args[argLen-1]));
-		value = String.valueOf(m.invoke(obj)); 
+		if(names.size()==1){ 
+			Method m = clazz.getMethod("get"
+					+ StringUtil.upperCaseFirst(names.poll()));
+			Object oValue = m.invoke(obj);
+			if (oValue instanceof Date) {
+				Date d = (Date) oValue;
+				value = StringUtil.formatDate(d, "yyyy-MM-dd HH:mm");
+			} else
+				value = String.valueOf(m.invoke(obj));
+		}else{
+			Method m = clazz.getMethod("get"
+					+ StringUtil.upperCaseFirst(names.poll()));
+			Object oValue = m.invoke(obj);
+			value = getValue(oValue,names);
+		}
+		
 		return value;
 	}
-	
+
 }

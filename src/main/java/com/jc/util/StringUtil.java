@@ -1,5 +1,7 @@
 package com.jc.util; 
 import java.util.Random;  
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 public class StringUtil{
 
@@ -73,5 +75,10 @@ public class StringUtil{
 		for(int i=0;i<6;i++)
 			sb.append(ch[r.nextInt(len)]);
 		return sb.toString();
+	}
+	
+	public static String formatDate(Date date,String format){
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		return sdf.format(date);
 	}
 }
