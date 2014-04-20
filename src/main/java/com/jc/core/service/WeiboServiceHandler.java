@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Date;
 import java.util.UUID;
@@ -171,10 +172,7 @@ public class WeiboServiceHandler implements WeiboService {
 			String name = template.substring(begin + 2, end);
 			String value = "";
 			try {
-				LinkedList<String> names = new LinkedList<String>();
-				for(String n:name.split("\\.")){
-					names.add(n);
-				}
+				LinkedList<String> names = new LinkedList<String>(Arrays.asList(name.split("\\.")));
 				value = ReflectionUtil.getValue(status, names);
 			} catch (NoSuchMethodException e1) {
 				LOG.error("occured a exception status'id=" + status.getId()
