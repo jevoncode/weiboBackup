@@ -34,7 +34,7 @@ li{
 	cursor: url(../images/common/big.cur),auto!important;
 }
 
-img{
+.WB_media_list li img{
 	vertical-align: top;
 	display:inline-block;
 	max-width:120px;

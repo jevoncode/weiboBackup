@@ -173,6 +173,7 @@ public class WeiboServiceHandler implements WeiboService {
 			String value = "";
 			try {
 				LinkedList<String> names = new LinkedList<String>(Arrays.asList(name.split("\\.")));
+				names.poll(); // remove string 'status' 
 				value = ReflectionUtil.getValue(status, names);
 			} catch (NoSuchMethodException e1) {
 				LOG.error("occured a exception status'id=" + status.getId()
@@ -269,6 +270,8 @@ public class WeiboServiceHandler implements WeiboService {
 	}
 
 	public Status downloadImage(Status s) {
+		if(s.getPicUrls()==null||s.getPicUrls().length<1)
+			return s;
 		String[] imageUrls = new String[s.getPicUrls().length];
 		int index = 0;
 		for (String imageUrl : s.getPicUrls()) {

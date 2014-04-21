@@ -135,15 +135,28 @@ public class Status extends WeiboResponse implements java.io.Serializable {
 	public void setPicUrls(String[] picUrls){
 		this.picUrls = picUrls;
 		StringBuffer sb = new StringBuffer(); 
-		if(picUrls.length>1){
+		if(picUrls.length>1){  //GridView
 			sb.append("<div class=\"lotspic_Media clearfix\" ><ul class=\"lotspic_list clearfix\">"); 
-			for(int i=0;i<picUrls.length;i++)
-				sb.append("<li><img class=\"bigcursor\" src=\""+picUrls[i]+"\" ></li>");
+			for(int i=0;i<picUrls.length;i++){
+				sb.append("<li><a href=\"");
+				sb.append(picUrls[i].replaceFirst("thumbnail",
+						"large"));
+				sb.append("\" class=\"gallery_1\"><img class=\"bigcursor\" src=\"");
+				sb.append(picUrls[i]);
+				sb.append("\" /></a></li>");
+//				sb.append("<li><a href=\"large/6e609eedgw1ee3pyod15wj20eg0ssaem.jpg" class="gallery_1"><img class=\"bigcursor\" src=\""+picUrls[i]+"\" /></a></li>");
+			}
 			sb.append("</ul></div>");
-		}else if(picUrls.length>0){
+		}else if(picUrls.length>0){//only one picture
 			sb.append("<div class=\"chePicMin S_bg2 bigcursor\">"); 
-			sb.append("<img class=\"bigcursor\" src=\""+picUrls[0]+ "\" >");
-			sb.append("</div>");
+			sb.append("<a href=\"");
+			sb.append(picUrls[0].replaceFirst("thumbnail",
+					"large"));
+			sb.append("\" class=\"gallery_1\"><img class=\"bigcursor\" src=\"");
+			sb.append(picUrls[0]);
+			sb.append("\" /></a></div>");
+//			sb.append("<img class=\"bigcursor\" src=\""+picUrls[0]+ "\" />");
+//			sb.append("</div>");
 		}
 		setMediaList(sb.toString());
 	}
