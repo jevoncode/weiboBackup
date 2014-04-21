@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Date;
 import java.util.UUID;
 import java.io.File;
@@ -272,34 +274,56 @@ public class WeiboServiceHandler implements WeiboService {
 	public Status downloadImage(Status s) {
 		if(s.getPicUrls()==null||s.getPicUrls().length<1)
 			return s;
-		String[] imageUrls = new String[s.getPicUrls().length];
-		int index = 0;
-		for (String imageUrl : s.getPicUrls()) {
+		Map<Integer,String> failUrls = new HashMap<Integer,String>();
+//		String[] imageUrls = new String[s.getPicUrls().length];
+		String[] imageUrls = s.getPicUrls();
+//		int index = 0;
+		for(int i=0;i<imageUrls.length;i++){
+//		for (String imageUrl : s.getPicUrls()) {
 			try {
-				// download thumbnail image
-				byte[] thumbnailImage = NetUtil.readImage(imageUrl);
-				File thumbnailDirectory = new File(path, "thumbnail");
-				DataUtil.writeImage(
-						thumbnailDirectory,
-						imageUrl.substring(imageUrl.lastIndexOf("/"),
-								imageUrl.length()), thumbnailImage);
-				// download large image
-				String largeImageUrl = imageUrl.replaceFirst("thumbnail",
-						"large");
-				byte[] largeImage = NetUtil.readImage(largeImageUrl);
-				File largeDirectory = new File(path, "large");
-				DataUtil.writeImage(largeDirectory,
-						largeImageUrl.substring(largeImageUrl.lastIndexOf("/"),
-								largeImageUrl.length()), largeImage);
-				imageUrl = imageUrl.substring(
-						imageUrl.lastIndexOf("thumbnail"), imageUrl.length());
-				imageUrls[index++] = imageUrl;
-				LOG.debug("saved image:" + imageUrl);
+				String imageUrl = downloadImage(imageUrls[i]);
+				imageUrls[i] = imageUrl;
 			} catch (IOException e) {
-				LOG.error("occured exception when download images' \n" + e);
+				LOG.error("occured exception when download images:"+imageUrls[i] + e);
+				LOG.error("keep it,then i will download it again.");
+				failUrls.put(i,imageUrls[i]);
 			}
+		}
+		if(failUrls.size()>0){
+			for(int i:failUrls.keySet())
+				try{
+					LOG.debug("the second time to download image:"+failUrls.get(i));
+					String imageUrl = downloadImage(failUrls.get(i));
+					imageUrls[i] = imageUrl;
+				}catch (IOException e) {
+					LOG.error("occured exception when the second time download images:"+failUrls.get(i)+" \n" + e);
+					imageUrls[i] = "images/fail.thumbnail.jpg";
+				}
 		}
 		s.setPicUrls(imageUrls);
 		return s;
+	}
+	
+	public String downloadImage(String imageUrl) throws IOException{
+		String result = "";
+		// download thumbnail image
+		byte[] thumbnailImage = NetUtil.readImage(imageUrl);
+		File thumbnailDirectory = new File(path, "thumbnail");
+		DataUtil.writeImage(
+				thumbnailDirectory,
+				imageUrl.substring(imageUrl.lastIndexOf("/"),
+						imageUrl.length()), thumbnailImage);
+		// download large image
+		String largeImageUrl = imageUrl.replaceFirst("thumbnail",
+				"large");
+		byte[] largeImage = NetUtil.readImage(largeImageUrl);
+		File largeDirectory = new File(path, "large");
+		DataUtil.writeImage(largeDirectory,
+				largeImageUrl.substring(largeImageUrl.lastIndexOf("/"),
+						largeImageUrl.length()), largeImage);
+		result = imageUrl.substring(
+				imageUrl.lastIndexOf("thumbnail"), imageUrl.length());
+		LOG.debug("saved image:" + imageUrl);
+		return result;
 	}
 }
