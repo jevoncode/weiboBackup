@@ -1,0 +1,7 @@
+@CHARSET "UTF-8";
+.jc-checkbox,.col-lg-4{
+	text-align: center;
+}
+.jc-checkbox img{
+	border-radius: 10px;
+}
