@@ -133,6 +133,8 @@ public class Status extends WeiboResponse implements java.io.Serializable {
 	}
 
 	public void setPicUrls(String[] picUrls){
+		if(picUrls==null)
+			return;
 		this.picUrls = picUrls;
 		StringBuffer sb = new StringBuffer(); 
 		if(picUrls.length>1){  //GridView

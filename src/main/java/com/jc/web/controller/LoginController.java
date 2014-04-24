@@ -39,7 +39,8 @@ public class LoginController{
 		jcUser.setCreatedTime(new Date());
 		jcUser.setCode(code);
 		jcUser.setVerificationCode(StringUtil.generateVarificationCode());
-		if(authorizationService.obtainAuthorization(jcUser))
+		jcUser = authorizationService.obtainAuthorization(jcUser);
+		if(jcUser.getAccessToken()!=null&&jcUser.getAccessToken().length()>0)
 			return "/main";
 		else
 			return "/loginerror";

@@ -5,23 +5,26 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.io.IOException;
+import java.io.IOException; 
 
 import com.jc.core.domain.JcUser;
+import com.jc.core.domain.State;
 import com.jc.core.service.WeiboService;
 
 @Controller
 public class WeiboController {
-	private static final Logger LOG = LoggerFactory
-			.getLogger(WeiboController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(WeiboController.class);
 
 	@Autowired
 	private JcUser jcUser;
@@ -31,12 +34,22 @@ public class WeiboController {
 
 	@RequestMapping(value = "/backup", method = RequestMethod.GET)
 	@ResponseBody
-	public String backup() {
-		LOG.debug("backup weibo which onwer's sessionid:" + jcUser.getSession());
-		LOG.debug("backup weibo which onwer's code:" + jcUser.getCode());
-		int count = weiboService.obtainWeibo(jcUser);
-		// model.addAttribute("count",count);
-		return String.valueOf(count);
+	public State backup(String thumbnail, String large, String comment, HttpSession session) {
+		if (jcUser.getZipPath() == null || jcUser.getZipPath().length() == 0) {
+			LOG.debug("backup weibo which onwer's sessionid:" + jcUser.getSession());
+			LOG.debug("backup weibo which onwer's code:" + jcUser.getCode());
+			jcUser.setBackupThumbnail("true".equals(thumbnail));
+			jcUser.setBackupLarge("true".equals(large));
+			jcUser.setBackupComment("true".equals(comment));
+			jcUser = weiboService.obtainWeibo(jcUser, session.getServletContext());
+			jcUser = weiboService.packageZip(jcUser);
+		} 
+		State state = new State();
+		state.setWeiboCount(jcUser.getWeiboCount());
+		state.setThumbnailCount(jcUser.getThumbnailCount());
+		state.setLargeCount(jcUser.getLargeCount());
+		state.setCommentCount(jcUser.getCommentCount());
+		return state;
 	}
 
 	@RequestMapping(value = "/downpage", method = RequestMethod.GET)
@@ -45,18 +58,14 @@ public class WeiboController {
 	}
 
 	@RequestMapping(value = "/download", method = RequestMethod.GET)
-	public void download(HttpSession session, HttpServletResponse response) {
-		if (jcUser.getZipPath() == null || jcUser.getZipPath().length() == 0)
-			jcUser = weiboService.packageZip(jcUser,
-					session.getServletContext());
+	public void download(HttpServletResponse response) {
 		FileInputStream in = null;
 		OutputStream out = null;
 		try {
 			in = weiboService.downloadZip(jcUser);
 			out = response.getOutputStream();
 			response.setContentType("");
-			response.setHeader("Content-disposition",
-					"attachment;filename=weiboBackup.zip");
+			response.setHeader("Content-disposition", "attachment;filename=weiboBackup.zip");
 			byte[] buffer = new byte[4096];
 			int len = -1;
 			while ((len = in.read(buffer)) != -1) {

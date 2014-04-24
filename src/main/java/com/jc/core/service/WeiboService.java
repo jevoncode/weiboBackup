@@ -6,11 +6,11 @@ import java.io.FileInputStream;
 
 public interface WeiboService{
 	
-	public int obtainWeibo(JcUser jcUser);
+	public JcUser obtainWeibo(JcUser jcUser, ServletContext context);
 	
 	public String compositeWeibo(JcUser jcUser) ;
 	
 	public FileInputStream downloadZip(JcUser jcUser);
 	
-	public JcUser packageZip(JcUser jcUser, ServletContext context);
+	public JcUser packageZip(JcUser jcUser);
 }

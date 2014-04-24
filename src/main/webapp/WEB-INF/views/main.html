@@ -8,13 +8,14 @@
     <meta name="author" content=""/>
     <link rel="shortcut icon" href="resources/ico/favicon.ico"/>
 
-    <title>Justified Nav Template for Bootstrap</title>
+    <title>JC SINA WeiBo Backup</title>
 
     <!-- Bootstrap core CSS -->
     <link href="resources/css/bootstrap.min.css" rel="stylesheet"/>
 
     <!-- Custom styles for this template -->
     <link href="resources/css/justified-nav.css" rel="stylesheet"/>
+    <link href="resources/css/jc-default.css" rel="stylesheet"/>
 	<script src="resources/js/jquery-1.9.1.js"></script>
 
     <!-- Just for debugging purposes. Don't actually copy this line! -->
@@ -27,15 +28,57 @@
     <![endif]-->
 	<script>
 	$(function() {  
+		var checked = new Array();  //actually it's a object, not an array.
+		checked["thumbnail"] = false; //it's a attribute of 'checked' object
+		checked["large"] = false;
+		checked["comment"] = false; 
+		
+		var oldSrc ;
 		$("#backup").bind("click",function(){
-			alert("begin request backup");
-			$.get( "/backup", function(data) { 
-				  alert( "You has backup "+data+"weibo" );
+			var data = {'thumbnail':checked.thumbnail,'large':checked.large,'comment':checked.comment};
+			$.get( "/backup", data,function(res) { 
+				  var weiboCount = res.weiboCount;
+				  alert( "succes backup weibo:"+weiboCount+",thumbnail:"+res.thumbnailCount+",large:"+res.largeCount+",comment"+res.commentCount);
 				  window.location.href = "/downpage";
 				}).fail(function() {
 				    alert( "occurred error where backup weibo" );
 				  });
 		});
+		
+		$(".jc-checkbox > img").bind("click",function(){
+			var $img = $(this); 
+			var name = oldSrc.substring(oldSrc.lastIndexOf("-")+1,oldSrc.lastIndexOf("."));
+			if(oldSrc.indexOf("before")!=-1){
+				$img.attr("src",oldSrc.replace("before","after"));
+				checked[name] = true;
+			}
+			else{
+				$img.attr("src",oldSrc.replace("after","before"));
+				checked[name]  = false;	  
+			}
+		});
+		
+		$(".jc-checkbox > img").bind({
+			mouseenter: function(e) {
+ 				 // Hover event handler
+   				var $img = $(this);
+				var src = $img.attr("src");
+				oldSrc = src;
+				var name = oldSrc.substring(oldSrc.lastIndexOf("-")+1,oldSrc.lastIndexOf("."));
+				if(checked[name] ==false)
+					$img.attr("src",src.replace("before","after"));
+		    },
+  			mouseleave: function(e) {
+  				// Hover event handler
+   				var $img = $(this);
+				var src = $img.attr("src");
+				oldSrc = src;
+				var name = oldSrc.substring(oldSrc.lastIndexOf("-")+1,oldSrc.lastIndexOf("."));
+				if(checked[name] ==false)
+					$img.attr("src",src.replace("after","before"));	  
+  			}
+		});
+		
 	});
 	</script>
   </head>
@@ -45,7 +88,7 @@
     <div class="container">
 
       <div class="masthead">
-        <h3 class="text-muted">Project name</h3>
+        <h3 class="text-muted">JevonCode's Product</h3>
         <ul class="nav nav-justified">
           <li class="active"><a href="#">Home</a></li>
           <li><a href="#">Projects</a></li>
@@ -58,34 +101,40 @@
 
       <!-- Jumbotron -->
       <div class="jumbotron">
-        <h1><span th:text="${jcUser.verificationCode}">, </span></h1>
-        <p class="lead">plz mark the code above!</p>
+        <h1><span class="text-danger" th:text="${jcUser.verificationCode}"></span></h1>
+        <p>plz mark the red code above!</p>
         <p><a class="btn btn-lg btn-success" role="button" id="backup">Backup</a></p>
+        <p class="lead">besides plain Weibo will be backup, what else do you want to backup too. plz choose it.</p>
       </div>
 
       <!-- Example row of columns -->
       <div class="row">
-        <div class="col-lg-4">
-          <h2>Safari bug warning!</h2>
-          <p class="text-danger">As of v7.0.1, Safari exhibits a bug in which resizing your browser horizontally causes rendering errors in the justified nav that are cleared upon refreshing.</p>
-          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-          <p><a class="btn btn-primary" href="#" role="button">View details &raquo;</a></p>
+       <div class="col-lg-4">
+          <div class="jc-checkbox">
+          	<img src="resources/images/before-thumbnail.png"/>
+          </div>	
+          <h2>Thumbnail</h2>
+          <p>We suggest you choise it.It means to it will backup thumbnails in your weibo.If not, maybe we backup quickly, but not that speediness you think.</p> 
         </div>
         <div class="col-lg-4">
-          <h2>Heading</h2>
-          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-          <p><a class="btn btn-primary" href="#" role="button">View details &raquo;</a></p>
+          <div class="jc-checkbox">
+          	<img src="resources/images/before-large.png"/>
+          </div>	
+          <h2>Large Picture</h2>
+          <p>It means to it will backup large pictures in your weibo. We don't suggest you choise it. Because it takes so much time to backup large pictures, so does when you download it.</p> 
        </div>
         <div class="col-lg-4">
-          <h2>Heading</h2>
-          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa.</p>
-          <p><a class="btn btn-primary" href="#" role="button">View details &raquo;</a></p>
+           <div class="jc-checkbox">
+          	<img src="resources/images/before-comment.png"/>
+          </div>	
+          <h2>Comments</h2>
+          <p>Whatever</p> 
         </div>
       </div>
 
       <!-- Site footer -->
       <div class="footer">
-        <p>&copy; Company 2014</p>
+        <p>&copy; Copyright JevonCode's Studio 2014</p>
       </div>
 
     </div> <!-- /container -->
