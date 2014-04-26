@@ -60,11 +60,19 @@
 							<i class="S_txt3">|</i>
 							<a href="javascript:void(0);" >收藏</a>
 							<i class="S_txt3">|</i>						
-							<a href="javascript:void(0);" >评论(${status.commentsCount})</a>
+							<a href="javascript:void(0);"  onclick="comments(this)">评论(${status.commentsCount})</a>
 						</div>
 						<div class="WB_from">
 							<a class="S_link2 WB_time">${status.createdAt}</a>
 							<em class="S_txt2">来自</em><a class="S_link2"  href="${status.source.url}">${status.source.name}</a>
+						</div>
+					</div>
+					<div node-type="feed_list_repeat" class="WB_media_expand repeat S_line1 S_bg4" style="display: none"> 
+						<div>
+						 	<!-- 已有评论列表 -->
+							<div class="comment_lists" node-type="feed_list_commentList">
+								 ${status.commentList} 
+							</div>
 						</div>
 					</div>
 				</div>

@@ -34,15 +34,23 @@
 		checked["comment"] = false; 
 		
 		var oldSrc ;
+		var isBackuping = false;
 		$("#backup").bind("click",function(){
+			if(isBackuping){
+				alert("It's backuping, don't click any more!");
+				return ;
+			}
 			var data = {'thumbnail':checked.thumbnail,'large':checked.large,'comment':checked.comment};
 			$.get( "/backup", data,function(res) { 
 				  var weiboCount = res.weiboCount;
-				  alert( "succes backup weibo:"+weiboCount+",thumbnail:"+res.thumbnailCount+",large:"+res.largeCount+",comment"+res.commentCount);
+				  alert( "succes backup weibo:"+weiboCount+",thumbnail:"+res.thumbnailCount+",large:"+res.largeCount+",comment"+res.commentCount+",files total size is "+res.fileSize+"MB");
 				  window.location.href = "/downpage";
 				}).fail(function() {
 				    alert( "occurred error where backup weibo" );
 				  });
+			$(this).css("background-color","#e5e5e5");
+			$(this).css("border-color","#d5d5d5");
+			isBackuping = true;
 		});
 		
 		$(".jc-checkbox > img").bind("click",function(){

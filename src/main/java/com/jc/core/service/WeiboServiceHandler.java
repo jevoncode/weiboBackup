@@ -23,8 +23,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import com.jc.weibo4j.service.Timeline;
+import com.jc.weibo4j.service.Comments;
 import com.jc.weibo4j.domain.Status;
+import com.jc.weibo4j.domain.Comment;
 import com.jc.weibo4j.domain.StatusWapper;
+import com.jc.weibo4j.domain.CommentWapper;
 import com.jc.weibo4j.exception.WeiboException;
 import com.jc.core.domain.JcUser;
 import com.jc.util.StringUtil;
@@ -34,6 +37,7 @@ import com.jc.util.FileUtils;
 import com.jc.util.ReflectionUtil;
 import com.jc.persistence.service.JcUserPersistenceService;
 import com.jc.persistence.service.WeiboPersistenceService;
+import com.jc.baidu4j.service.Place;
 
 import javax.servlet.ServletContext;
 
@@ -45,6 +49,15 @@ public class WeiboServiceHandler implements WeiboService {
 	private JcUserPersistenceService jcUserPersistenceService;
 	private String path = ""; // which save weibo file including html,images
 	private JcUser jcUser;
+	private int thumbnailCount = 0;
+	private int largeCount = 0;
+	private int commentCount = 0;
+	private float zipFileSize; // Unit is 'M'
+	private Comments c = new Comments(); // TODO to be optimized
+	private Timeline tm = new Timeline(); // TODO to be optimized
+	private int callCount = 0;
+	private int limit = 150; // the limit of call weibo api in one hour;
+	private boolean outOfLimit = false;
 
 	public WeiboServiceHandler(WeiboPersistenceService weiboPersistenceService, JcUserPersistenceService jcUserPersistenceService) {
 		this.weiboPersistenceService = weiboPersistenceService;
@@ -68,11 +81,11 @@ public class WeiboServiceHandler implements WeiboService {
 		// should be handled by security validation
 		if (jcUser.getAccessToken() == null || jcUser.getAccessToken().length() == 0)
 			return jcUser;
-		this.jcUser = jcUser; 
+		this.jcUser = jcUser;
 		preparePath(context);
 
-		Timeline tm = new Timeline();
 		tm.client.setToken(jcUser.getAccessToken());
+		c.client.setToken(jcUser.getAccessToken());
 
 		// begin to obtain weibo from weibo api.
 		statusWapper = obtainWeibo(tm, jcUser, 1);
@@ -88,26 +101,93 @@ public class WeiboServiceHandler implements WeiboService {
 			statusWapper = obtainWeibo(tm, jcUser, page);
 			count += weiboPersistenceService.saveStatuses(statusWapper.getStatuses());
 			swoopCount += statusWapper.getStatuses().size();
+			if (callCount >= limit || outOfLimit == true)
+				break;
 		}
 		LOG.debug("obtained " + swoopCount + " Weibos");
 		LOG.debug("save " + count + " Weibos");
 		this.jcUser.setWeiboCount(count);
+		this.jcUser.setThumbnailCount(thumbnailCount);
+		this.jcUser.setLargeCount(largeCount);
+		this.jcUser.setCommentCount(commentCount);
 		return this.jcUser;
 	}
 
 	public StatusWapper obtainWeibo(Timeline tm, JcUser jcUser, int page) {
 		StatusWapper statusWapper = null;
+		int i = 0;
 		try {
 			statusWapper = tm.getUserTimeline(COUNT_PER_PAGE, page, jcUser);
+			LOG.debug(++callCount + "st call weibo api (now is userTimeline)");
 		} catch (WeiboException e) {
 			LOG.error("occured a exception when obtaining weibo use weibo api" + e);
+			LOG.error(++callCount + "st call weibo api (now is comments) cause error");
+			outOfLimit = true;
 		}
 
-		// download pictures
-		List<Status> statues = statusWapper.getStatuses();
-		for (int i = 0; i < statues.size(); i++)
-			statues.set(i, downloadImage(statues.get(i)));
+		// download pictures and/or obtain comments
+		List<Status> statuses = statusWapper.getStatuses();
+		for (i = 0; i < statuses.size(); i++) {
+			Status s = statuses.get(i);
+			Place place = new Place();
+			try {
+				if (s.getLatitude() != -1 && s.getLongitude() != -1)
+					s.setFormatedAddress(place.formattedAddress(s.getLatitude(), s.getLongitude()));
+				else
+					s.setFormatedAddress(null);
+			} catch (Exception e) {
+				LOG.error("occured a exception when format address " + e);
+				LOG.error("try again");
+				try {
+					if (s.getLatitude() != -1 && s.getLongitude() != -1)
+						s.setFormatedAddress(place.formattedAddress(s.getLatitude(), s.getLongitude()));
+					else
+						s.setFormatedAddress(null);
+				} catch (Exception e2) {
+					LOG.error("occured a exception when format address " + e2);
+					s.setFormatedAddress(null);
+				}
+			}
+			if (s.getCommentsCount() > 0)
+				s.setComments(obtainComments(s));
+			statuses.set(i, downloadImage(s));
+			if (callCount >= limit || outOfLimit == true)
+				break;
+		}
+		LOG.debug("this time get statues count is" + statuses.size());
+		int index = 0;
+		if (outOfLimit == true)
+			index = i;
+		else
+			index = i + 1;
+		int len = statuses.size();
+		int times = len - index;
+		for (int j = 0; j < times; j++) {
+			Status s = statuses.remove(index);
+			LOG.debug("removing id:" + s.getId() + ", creatAt:" + StringUtil.formatDate(s.getCreatedAt(), "yyyy-MM-dd HH:mm"));
+		}
+		LOG.debug("after remove get statues count is" + statuses.size());
+		LOG.debug("after remove get statusWapper.statues count is" + statusWapper.getStatuses().size());
 		return statusWapper;
+	}
+
+	public List<Comment> obtainComments(Status s) {
+		CommentWapper commentWapper = null;
+		if (!jcUser.isBackupComment())
+			return null;
+		try {
+			commentWapper = c.getCommentById(s.getId());
+			commentCount += commentWapper.getComments().size();
+			LOG.debug(++callCount + "st call weibo api (now is comments)");
+		} catch (WeiboException e) {
+			LOG.error("occured a exception when obtaining comments status'id=" + s.getId() + ", Exception:" + e);
+			LOG.error(++callCount + "st call weibo api (now is comments) cause error");
+			outOfLimit = true;
+		}
+		if (commentWapper != null)
+			return commentWapper.getComments();
+		else
+			return null;
 	}
 
 	public void preparePath(ServletContext context) {
@@ -128,8 +208,8 @@ public class WeiboServiceHandler implements WeiboService {
 			FileUtils.copyFile(new File(tamplateUrl.toURI()), dir);
 		} catch (URISyntaxException e) {
 			LOG.error(e.getMessage());
-		} catch (IOException e){
-			LOG.error("occurred a errer when copy style files "+e);
+		} catch (IOException e) {
+			LOG.error("occurred a errer when copy style files " + e);
 		}
 	}
 
@@ -240,6 +320,8 @@ public class WeiboServiceHandler implements WeiboService {
 			File zip = new File(zipPath);
 			FileUtils.zipFile(new File(path), zip);
 			jcUser.setZipPath(zipPath);
+			float fileSize = zip.length();
+			jcUser.setFileSize(fileSize / (1024 * 1024));
 		} catch (FileNotFoundException e) {
 			LOG.debug("not found file' \n" + e);
 		} catch (IOException e2) {
@@ -260,11 +342,11 @@ public class WeiboServiceHandler implements WeiboService {
 	}
 
 	public Status downloadImage(Status s) {
-		if (s.getPicUrls() == null || s.getPicUrls().length == 0)
-			return s;
 		if (s.getRetweetedStatus() != null) {
 			s.setRetweetedStatus(downloadImage(s.getRetweetedStatus()));
 		}
+		if (s.getPicUrls() == null || s.getPicUrls().length == 0)
+			return s;
 		Map<Integer, String> failUrls = new HashMap<Integer, String>();
 		// String[] imageUrls = new String[s.getPicUrls().length];
 		String[] imageUrls = s.getPicUrls();
@@ -293,8 +375,8 @@ public class WeiboServiceHandler implements WeiboService {
 		}
 		if (jcUser.isBackupThumbnail())
 			s.setPicUrls(imageUrls);
-		else
-			s.setPicUrls(null);
+		// else //without any picture
+		// s.setPicUrls(null);
 		return s;
 	}
 
@@ -306,6 +388,8 @@ public class WeiboServiceHandler implements WeiboService {
 			File thumbnailDirectory = new File(path, "thumbnail");
 			DataUtil.writeImage(thumbnailDirectory, imageUrl.substring(imageUrl.lastIndexOf("/"), imageUrl.length()), thumbnailImage);
 			LOG.debug("saved thumbnail image:" + imageUrl);
+			result = imageUrl.substring(imageUrl.lastIndexOf("thumbnail"), imageUrl.length());
+			thumbnailCount++;
 		}
 		if (jcUser.isBackupLarge()) {
 			// download large image
@@ -315,6 +399,7 @@ public class WeiboServiceHandler implements WeiboService {
 			DataUtil.writeImage(largeDirectory, largeImageUrl.substring(largeImageUrl.lastIndexOf("/"), largeImageUrl.length()), largeImage);
 			result = imageUrl.substring(imageUrl.lastIndexOf("thumbnail"), imageUrl.length());
 			LOG.debug("saved large image:" + largeImageUrl);
+			largeCount++;
 		}
 		return result;
 	}

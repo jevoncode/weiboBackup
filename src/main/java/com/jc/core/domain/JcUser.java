@@ -25,6 +25,7 @@ public class JcUser implements Serializable {
 	private int largeCount;
 	private int commentCount;
 	private int weiboCount;
+	private float fileSize; // MB unit
 
 	public void setId(Long id) {
 		this.id = id;
@@ -130,8 +131,8 @@ public class JcUser implements Serializable {
 		return thumbnailCount;
 	}
 
-	public void setLargeCount(int largeCount){
-		this.largeCount= largeCount;
+	public void setLargeCount(int largeCount) {
+		this.largeCount = largeCount;
 	}
 
 	public int getLargeCount() {
@@ -152,5 +153,13 @@ public class JcUser implements Serializable {
 
 	public int getWeiboCount() {
 		return weiboCount;
+	}
+
+	public void setFileSize(float fileSize) {
+		this.fileSize = fileSize;
+	}
+
+	public float getFileSize() {
+		return fileSize;
 	}
 }

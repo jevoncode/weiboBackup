@@ -5,6 +5,7 @@ public class State {
 	private int largeCount;
 	private int commentCount;
 	private int weiboCount;
+	private float fileSize; // MB unit
 
 	public void setThumbnailCount(int thumbnailCount) {
 		this.thumbnailCount = thumbnailCount;
@@ -36,5 +37,12 @@ public class State {
 
 	public int getWeiboCount() {
 		return weiboCount;
+	}
+	public void setFileSize(float fileSize) {
+		this.fileSize = fileSize;
+	}
+
+	public float getFileSize() {
+		return fileSize;
 	}
 }

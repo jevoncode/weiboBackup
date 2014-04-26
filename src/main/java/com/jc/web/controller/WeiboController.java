@@ -49,6 +49,7 @@ public class WeiboController {
 		state.setThumbnailCount(jcUser.getThumbnailCount());
 		state.setLargeCount(jcUser.getLargeCount());
 		state.setCommentCount(jcUser.getCommentCount());
+		state.setFileSize(jcUser.getFileSize());
 		return state;
 	}
 
