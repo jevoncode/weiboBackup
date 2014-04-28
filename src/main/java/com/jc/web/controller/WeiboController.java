@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.io.IOException; 
+import java.io.IOException;
 
 import com.jc.core.domain.JcUser;
 import com.jc.core.domain.State;
@@ -36,20 +36,37 @@ public class WeiboController {
 	@ResponseBody
 	public State backup(String thumbnail, String large, String comment, HttpSession session) {
 		if (jcUser.getZipPath() == null || jcUser.getZipPath().length() == 0) {
-			LOG.debug("backup weibo which onwer's sessionid:" + jcUser.getSession());
-			LOG.debug("backup weibo which onwer's code:" + jcUser.getCode());
+			LOG.debug("backup weibo, its  owner's sessionid:" + jcUser.getSession());
+			LOG.debug("backup weibo, its  owner's code:" + jcUser.getCode());
+			LOG.debug("backup weibo, its  owner's accessToken:" + jcUser.getAccessToken());
+			LOG.debug("backup weibo, its  owner's ip address:" + jcUser.getIpAddress());
 			jcUser.setBackupThumbnail("true".equals(thumbnail));
 			jcUser.setBackupLarge("true".equals(large));
 			jcUser.setBackupComment("true".equals(comment));
 			jcUser = weiboService.obtainWeibo(jcUser, session.getServletContext());
 			jcUser = weiboService.packageZip(jcUser);
-		} 
+		}
 		State state = new State();
 		state.setWeiboCount(jcUser.getWeiboCount());
 		state.setThumbnailCount(jcUser.getThumbnailCount());
 		state.setLargeCount(jcUser.getLargeCount());
 		state.setCommentCount(jcUser.getCommentCount());
 		state.setFileSize(jcUser.getFileSize());
+		return state;
+	}
+
+	@RequestMapping(value = "/delete", method = RequestMethod.GET)
+	@ResponseBody
+	public State delete() {
+		if (jcUser.getZipPath() == null || jcUser.getZipPath().length() == 0) {
+			LOG.debug("delete weibo, its  owner's sessionid:" + jcUser.getSession());
+			LOG.debug("delete weibo, its  owner's code:" + jcUser.getCode());
+			LOG.debug("delete weibo, its  owner's accessToken:" + jcUser.getAccessToken());
+			LOG.debug("delete weibo, its  owner's ip address:" + jcUser.getIpAddress());
+			jcUser = weiboService.deleteWeibo(jcUser);
+		}
+		State state = new State();
+		state.setDeleteCount(jcUser.getDeleteCount());
 		return state;
 	}
 

@@ -75,6 +75,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
 	private String verifiedReason;		  //认证原因
 	private String weihao;				  //微號
 	private String statusId;
+	private String profileUrl; 			  //用户地址
 	public String getVerified_reason() {
 		return verifiedReason;
 	}
@@ -212,6 +213,12 @@ public class User extends WeiboResponse implements java.io.Serializable {
 	public int getBiFollowersCount() {
 		return biFollowersCount;
 	}
+	public void setProfileUrl(String profileUrl){
+		this.profileUrl =profileUrl;
+	}
+	public String getProfileUrl(){
+		return profileUrl;
+	}
 	/*package*/public User(JSONObject json) throws WeiboException {
 		super();
 		init(json);
@@ -248,6 +255,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
 				onlineStatus = json.getInt("online_status");
 				statusId = json.getString("status_id");
 				biFollowersCount = json.getInt("bi_followers_count");
+				profileUrl = json.getString("profile_url");
 				if(!json.getString("remark").isEmpty()){					
 					remark = json.getString("remark");
 				}

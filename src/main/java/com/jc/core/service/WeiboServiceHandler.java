@@ -2,6 +2,7 @@ package com.jc.core.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.net.URI;
@@ -22,6 +23,7 @@ import java.net.URISyntaxException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+
 import com.jc.weibo4j.service.Timeline;
 import com.jc.weibo4j.service.Comments;
 import com.jc.weibo4j.domain.Status;
@@ -58,6 +60,7 @@ public class WeiboServiceHandler implements WeiboService {
 	private int callCount = 0;
 	private int limit = 150; // the limit of call weibo api in one hour;
 	private boolean outOfLimit = false;
+	private int destroyedIndex = 0;
 
 	public WeiboServiceHandler(WeiboPersistenceService weiboPersistenceService, JcUserPersistenceService jcUserPersistenceService) {
 		this.weiboPersistenceService = weiboPersistenceService;
@@ -99,10 +102,10 @@ public class WeiboServiceHandler implements WeiboService {
 		// each request.
 		for (int page = 2; page < totalPage; page++) {
 			statusWapper = obtainWeibo(tm, jcUser, page);
-			count += weiboPersistenceService.saveStatuses(statusWapper.getStatuses());
-			swoopCount += statusWapper.getStatuses().size();
 			if (callCount >= limit || outOfLimit == true)
 				break;
+			count += weiboPersistenceService.saveStatuses(statusWapper.getStatuses());
+			swoopCount += statusWapper.getStatuses().size();
 		}
 		LOG.debug("obtained " + swoopCount + " Weibos");
 		LOG.debug("save " + count + " Weibos");
@@ -123,6 +126,7 @@ public class WeiboServiceHandler implements WeiboService {
 			LOG.error("occured a exception when obtaining weibo use weibo api" + e);
 			LOG.error(++callCount + "st call weibo api (now is comments) cause error");
 			outOfLimit = true;
+			return null;
 		}
 
 		// download pictures and/or obtain comments
@@ -402,5 +406,86 @@ public class WeiboServiceHandler implements WeiboService {
 			largeCount++;
 		}
 		return result;
+	}
+
+	@Override
+	public JcUser deleteWeibo(JcUser jcUser) {
+		this.jcUser = jcUser;
+		tm.client.setToken(jcUser.getAccessToken());
+		List<Status> statuses = weiboPersistenceService.getAllTop(jcUser);
+		new DeleteTask(jcUser.getVerificationCode()).start();
+		jcUser.setDeleteCount(destroyedIndex + 1);
+		return this.jcUser;
+	}
+
+	class DeleteTask extends Thread {
+		private List<Status> statuses = null;
+
+		public DeleteTask(String name){
+			super(name);
+		}
+		
+		public DeleteTask(List<Status> statuses) {
+			statuses = statuses;
+		}
+		
+		public boolean containUndeleted(List<Status> statuses){
+			for (Status s : statuses) {
+				if(!s.isDeleted())
+					return true;
+			}
+			return false;
+		}
+
+		@Override
+		public void run() {
+			while (containUndeleted(statuses)) {
+				LOG.debug("(Thread-"+Thread.currentThread().getName()+")delete weibo, its  owner's sessionid:" + jcUser.getSession());
+				LOG.debug("(Thread-"+Thread.currentThread().getName()+")delete weibo, its  owner's code:" + jcUser.getCode());
+				LOG.debug("(Thread-"+Thread.currentThread().getName()+")delete weibo, its  owner's accessToken:" + jcUser.getAccessToken());
+				LOG.debug("(Thread-"+Thread.currentThread().getName()+")delete weibo, its  owner's ip address:" + jcUser.getIpAddress());
+				for(int i = 0;i<statuses.size();i++){
+					Status s = statuses.get(i);
+					if(s.isDeleted())
+						continue;
+					Status ds = null;
+					try {
+						if (outOfLimit != true) {
+							LOG.debug("deleting " + (destroyedIndex+1) + " of " + jcUser.getWeiboCount() + " weibos, status.id=:" + s.getId());
+							ds = tm.Destroy(s.getId());
+							s.setDeleted(true);
+							statuses.set(i, s); // in OOP(Object Oriented Programming), it will changes table(type of List) which in repository(type of Map)
+							// weiboPersistenceService.save(statues); in procedure oriented programming, it should be save by PersistenceService;
+							destroyedIndex++;
+						} else {
+							LOG.debug("not be deleted:status.id=" + s.getId());
+						}
+
+					} catch (WeiboException e) {
+						String error = e.toString();
+						if (error.indexOf("target weibo does not exist!") != -1)
+							LOG.error("an error eccorred when delete weibo,status.id=" + s.getId() + " this weibo does not exist");
+						else if (error.indexOf("User requests out of rate limit!") != -1) {
+							LOG.error("an error(\"User requests out of rate limit!\") eccorred when delete weibo,status.id=" + s.getId() + "  " + e);
+							outOfLimit = true;
+							LOG.debug("follow ids are not be delete:");
+						}
+					}
+				}
+				if(outOfLimit == true){
+					LOG.debug("take a break for a half hour");
+					try {
+						Thread.sleep(1800*1000);
+						outOfLimit = false;
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+					
+			}
+			LOG.debug("(Thread-"+Thread.currentThread().getName()+")delete completed, its  owner's sessionid:" + jcUser.getSession());
+			LOG.debug("(Thread-"+Thread.currentThread().getName()+")delete completed, its  owner's accessToken:" + jcUser.getAccessToken());
+		}
 	}
 }

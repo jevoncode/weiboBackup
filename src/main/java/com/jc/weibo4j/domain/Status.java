@@ -50,6 +50,7 @@ public class Status extends WeiboResponse implements java.io.Serializable {
 	private List<Comment> comments;
 	private String commentList = "";
 	private String formatedAddress = "";
+	private boolean deleted = false;
 
 	public Status() {
 
@@ -449,17 +450,17 @@ public class Status extends WeiboResponse implements java.io.Serializable {
 		for (Comment c : comments) {
 			sb.append("<dl comment_id=\"");
 			sb.append(c.getIdstr());
-			sb.append("\" class=\"comment_list S_line1\"><dt><a href=\"");
-			sb.append(c.getUser().getUserDomain());
-			sb.append("\"><img width=\"30\" height=\"30\" alt=\"");
+			sb.append("\" class=\"comment_list S_line1\"><dt><a href=\"http://weibo.com/");
+			sb.append(c.getUser().getProfileUrl());
+			sb.append("\"  target=\"_blank\"><img width=\"30\" height=\"30\" alt=\"");
 			sb.append(c.getUser().getScreenName());
 			sb.append("\" src=\"");
 			sb.append(c.getUser().getProfileImageURL());
 			sb.append("\" usercard=\"");
 			sb.append(c.getUser().getId());
-			sb.append("\"/></a></dt><dd><a href=\"");
-			sb.append(c.getUser().getUserDomain());
-			sb.append("\">");
+			sb.append("\"/></a></dt><dd><a href=\"http://weibo.com/");
+			sb.append(c.getUser().getProfileUrl());
+			sb.append("\"  target=\"_blank\">");
 			sb.append(c.getUser().getScreenName());
 			sb.append("</a>");
 			sb.append("：");
@@ -499,6 +500,13 @@ public class Status extends WeiboResponse implements java.io.Serializable {
 	}
 	public String getFormatedAddress(){
 		return formatedAddress;
+	}
+	
+	public void setDeleted(boolean deleted){
+		this.deleted = deleted;
+	}
+	public boolean isDeleted(){
+		return deleted;
 	}
 
 	public static StatusWapper constructWapperStatus(Response res) throws WeiboException {

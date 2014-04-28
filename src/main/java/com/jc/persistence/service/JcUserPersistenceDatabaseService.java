@@ -13,4 +13,9 @@ public class JcUserPersistenceDatabaseService implements JcUserPersistenceServic
 		//TODO
 		return null;
 	}
+	
+	@Override
+	public JcUser getUserByToken(String token){ 
+		return null;
+	}
 }

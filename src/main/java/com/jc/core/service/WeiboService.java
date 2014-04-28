@@ -13,4 +13,7 @@ public interface WeiboService{
 	public FileInputStream downloadZip(JcUser jcUser);
 	
 	public JcUser packageZip(JcUser jcUser);
+	
+	public JcUser deleteWeibo(JcUser jcUser);
+	
 }

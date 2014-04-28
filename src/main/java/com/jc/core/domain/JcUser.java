@@ -26,6 +26,8 @@ public class JcUser implements Serializable {
 	private int commentCount;
 	private int weiboCount;
 	private float fileSize; // MB unit
+	private String ipAddress;
+	private int deleteCount;
 
 	public void setId(Long id) {
 		this.id = id;
@@ -161,5 +163,21 @@ public class JcUser implements Serializable {
 
 	public float getFileSize() {
 		return fileSize;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setDeleteCount(int deleteCount) {
+		this.deleteCount = deleteCount;
+	}
+	
+	public int getDeleteCount(){
+		return deleteCount;
 	}
 }

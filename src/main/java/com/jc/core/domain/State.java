@@ -6,6 +6,7 @@ public class State {
 	private int commentCount;
 	private int weiboCount;
 	private float fileSize; // MB unit
+	private int deleteCount;
 
 	public void setThumbnailCount(int thumbnailCount) {
 		this.thumbnailCount = thumbnailCount;
@@ -38,11 +39,20 @@ public class State {
 	public int getWeiboCount() {
 		return weiboCount;
 	}
+
 	public void setFileSize(float fileSize) {
 		this.fileSize = fileSize;
 	}
 
 	public float getFileSize() {
 		return fileSize;
+	}
+
+	public void setDeleteCount(int deleteCount) {
+		this.deleteCount = deleteCount;
+	}
+
+	public int getDeleteCount() {
+		return deleteCount;
 	}
 }

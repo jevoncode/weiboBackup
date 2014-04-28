@@ -35,4 +35,16 @@ public class JcUserPersistenceMemoryService implements JcUserPersistenceService{
 		}
 		return null;
 	}
+	
+	@Override
+	public JcUser getUserByToken(String token){
+		JcConnection conn = repository.getConn();
+		List<Object> objects= conn.getAll(TABLE_NAME);
+		for(Object o:objects){
+			JcUser u = (JcUser)o;
+			if(token.equals(u. getAccessToken()))
+				return u;
+		}
+		return null;
+	}
 }

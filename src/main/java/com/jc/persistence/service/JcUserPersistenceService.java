@@ -7,4 +7,6 @@ public interface JcUserPersistenceService{
 	public int save(JcUser jcUser);
 	
 	public JcUser getUserBySessionId(String sessionId) ;
+	
+	public JcUser getUserByToken(String token);
 }
