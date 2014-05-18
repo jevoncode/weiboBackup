@@ -32,9 +32,12 @@
 			alert("begin request dowload");
 		});
 		$("#delete").bind("click",function(){
-			$.get( "/delete", data,function(res) { 
-				  var weiboCount = res.weiboCount;
-				  alert( "deleted "+res.deleteCount+" , and deleted thread is running");
+			$.get( "/delete",function(res) { 
+				  var deleteCount = res.deleteCount;
+				  if(deleteCount==-1)
+				  	alert("the weibos are all deleted! please backup again!");
+				  else
+				  	alert( "already be deleted count="+res.deleteCount+" , and deleted thread is running"); 
 				}).fail(function() {
 				    alert( "occurred error where backup weibo" );
 				  });

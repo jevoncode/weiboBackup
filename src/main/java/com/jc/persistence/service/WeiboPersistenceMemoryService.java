@@ -51,5 +51,15 @@ public class WeiboPersistenceMemoryService implements WeiboPersistenceService {
 	public int save(Status s){
 		JcConnection conn = repository.getConn(); 
 		return conn.executeUpdate(TABLE_NAME,s); 
+	}
+
+
+	@Override
+	public void deleteStatuses(List<Status> statuses) {
+		JcUser jcUser = statuses.get(0).getJcUser();
+		List<Status> olds = getAllTop(jcUser);
+		olds.removeAll(olds);
 	} 
+	
+	
 }

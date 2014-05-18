@@ -42,9 +42,12 @@
 			}
 			var data = {'thumbnail':checked.thumbnail,'large':checked.large,'comment':checked.comment};
 			$.get( "/backup", data,function(res) { 
-				  var weiboCount = res.weiboCount;
-				  alert( "succes backup weibo:"+weiboCount+",thumbnail:"+res.thumbnailCount+",large:"+res.largeCount+",comment"+res.commentCount+",files total size is "+res.fileSize+"MB");
-				  window.location.href = "/downpage";
+				  var info = res.info;
+				  if(info=="it is backuping"){
+				  	alert( "succes backup weibo:"+res.weiboCount+",thumbnail:"+res.thumbnailCount+",large:"+res.largeCount+",comment"+res.commentCount+",files total size is "+res.fileSize+"MB");
+				  	window.location.href = "/downpage";
+				  }else
+				  	alert(info);
 				}).fail(function() {
 				    alert( "occurred error where backup weibo" );
 				  });

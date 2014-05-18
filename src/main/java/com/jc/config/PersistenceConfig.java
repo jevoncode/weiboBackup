@@ -20,10 +20,15 @@ public class PersistenceConfig{
 	} 
 	
 	@Bean
-	public WeiboPersistenceService WeiboPersistenceService(Repository repository){
+	public WeiboPersistenceService weiboPersistenceService(Repository repository){
 		return new WeiboPersistenceMemoryService(repository);
 	} 
 	
+	
+	@Bean
+	public UserTaskPersistenceService userTaskPersistenceService(Repository repository){
+		return new UserTaskPersistenceMemoryService(repository);
+	}
 	
 	@Bean
 	public Repository repository(){

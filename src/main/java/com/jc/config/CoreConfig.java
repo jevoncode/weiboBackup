@@ -1,9 +1,7 @@
 package com.jc.config;
 
 import com.jc.core.service.*;
-
 import com.jc.persistence.service.*;
-
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,13 +10,13 @@ import org.springframework.context.annotation.Configuration;
 public class CoreConfig{
 	
 	@Bean
-	public AuthorizationService authorizationService(JcUserPersistenceService jcUserPersistenceService){
-		return new AuthorizationServiceHandler(jcUserPersistenceService);
+	public AuthorizationService authorizationService(JcUserPersistenceService jcUserPersistenceService,UserTaskPersistenceService userTaskPersistenceService){
+		return new AuthorizationServiceHandler(jcUserPersistenceService,userTaskPersistenceService);
 	}
 	
 	@Bean
-	public WeiboService weiboService(WeiboPersistenceService weiboPersistenceService,JcUserPersistenceService jcUserPersistenceService){
-		return new WeiboServiceHandler(weiboPersistenceService,jcUserPersistenceService);
+	public WeiboService weiboService(WeiboPersistenceService weiboPersistenceService,JcUserPersistenceService jcUserPersistenceService,UserTaskPersistenceService userTaskPersistenceService){
+		return new WeiboServiceHandler(weiboPersistenceService,jcUserPersistenceService,userTaskPersistenceService);
 	}
 	
 	@Bean

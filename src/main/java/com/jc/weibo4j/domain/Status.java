@@ -208,7 +208,7 @@ public class Status extends WeiboResponse implements java.io.Serializable {
 	}
 
 	public boolean contains(JcUser jcUser) {
-		return this.jcUser.getVerificationCode().equals(jcUser.getVerificationCode());
+		return this.jcUser.getAccessToken().equals(jcUser.getAccessToken());
 	}
 
 	public void setJcUser(JcUser jcUser) {

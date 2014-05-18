@@ -7,6 +7,15 @@ public class State {
 	private int weiboCount;
 	private float fileSize; // MB unit
 	private int deleteCount;
+	private String info;
+
+	public String getInfo() {
+		return info;
+	}
+
+	public void setInfo(String info) {
+		this.info = info;
+	}
 
 	public void setThumbnailCount(int thumbnailCount) {
 		this.thumbnailCount = thumbnailCount;

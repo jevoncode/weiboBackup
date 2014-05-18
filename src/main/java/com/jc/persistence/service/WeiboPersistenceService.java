@@ -8,5 +8,6 @@ public interface WeiboPersistenceService{
 
 	public int saveStatuses(List<Status> statuses); 
 	public List<Status> getAllTop(JcUser jcUser);
-	public int save(Status s); 
+	public int save(Status s);
+	public void deleteStatuses(List<Status> statuses); 
 }

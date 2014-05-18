@@ -9,4 +9,6 @@ public interface JcUserPersistenceService{
 	public JcUser getUserBySessionId(String sessionId) ;
 	
 	public JcUser getUserByToken(String token);
+
+	public void delete(JcUser old);
 }

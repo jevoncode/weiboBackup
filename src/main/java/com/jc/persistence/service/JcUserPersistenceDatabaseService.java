@@ -18,4 +18,9 @@ public class JcUserPersistenceDatabaseService implements JcUserPersistenceServic
 	public JcUser getUserByToken(String token){ 
 		return null;
 	}
+	@Override
+	public void delete(JcUser old) {
+		// TODO Auto-generated method stub
+		
+	}
 }

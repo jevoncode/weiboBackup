@@ -14,13 +14,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.util.Date;
 
 import com.jc.core.domain.JcUser;
 import com.jc.core.domain.State;
+import com.jc.core.domain.UserTask;
 import com.jc.core.service.WeiboService;
+import com.jc.persistence.service.JcUserPersistenceService;
+import com.jc.persistence.service.UserTaskPersistenceService;
 
 @Controller
 public class WeiboController {
@@ -31,11 +36,19 @@ public class WeiboController {
 
 	@Autowired
 	private WeiboService weiboService;
+	
+	@Autowired
+	private JcUserPersistenceService jcUserPersistenceService;
+	
+	@Autowired
+	private UserTaskPersistenceService userTaskPersistenceService;
 
 	@RequestMapping(value = "/backup", method = RequestMethod.GET)
 	@ResponseBody
 	public State backup(String thumbnail, String large, String comment, HttpSession session) {
-		if (jcUser.getZipPath() == null || jcUser.getZipPath().length() == 0) {
+		State state = new State();
+		UserTask userTask = userTaskPersistenceService.getUserTaskByKey(jcUser.getAccessToken());
+		if ((userTask==null||!userTask.getTask().isAlive())&&!isOutOfLimit()) {
 			LOG.debug("backup weibo, its  owner's sessionid:" + jcUser.getSession());
 			LOG.debug("backup weibo, its  owner's code:" + jcUser.getCode());
 			LOG.debug("backup weibo, its  owner's accessToken:" + jcUser.getAccessToken());
@@ -45,8 +58,13 @@ public class WeiboController {
 			jcUser.setBackupComment("true".equals(comment));
 			jcUser = weiboService.obtainWeibo(jcUser, session.getServletContext());
 			jcUser = weiboService.packageZip(jcUser);
+			state.setInfo("it is backuping");
+		} else if(jcUser.isOutOfLimit()==true){
+			state.setInfo("out for limit!");
 		}
-		State state = new State();
+		else{
+			state.setInfo("it is deleting, forbidden backup!");
+		}
 		state.setWeiboCount(jcUser.getWeiboCount());
 		state.setThumbnailCount(jcUser.getThumbnailCount());
 		state.setLargeCount(jcUser.getLargeCount());
@@ -55,16 +73,32 @@ public class WeiboController {
 		return state;
 	}
 
+	private boolean isOutOfLimit() {
+		if(jcUser.isOutOfLimit()==false)
+			return false;
+		else{
+			Date now = new Date();
+			long interval = (now.getTime() - jcUser.getCreatedTime().getTime())/(3600*1000);
+			if(interval>1){
+				jcUser.setOutOfLimit(false);
+				jcUser.setCreatedTime(now);
+				jcUserPersistenceService.delete(jcUser);
+				jcUserPersistenceService.save(jcUser);
+				return false;
+			}
+			else
+				return true;
+		}
+	}
+
 	@RequestMapping(value = "/delete", method = RequestMethod.GET)
 	@ResponseBody
 	public State delete() {
-		if (jcUser.getZipPath() == null || jcUser.getZipPath().length() == 0) {
-			LOG.debug("delete weibo, its  owner's sessionid:" + jcUser.getSession());
-			LOG.debug("delete weibo, its  owner's code:" + jcUser.getCode());
-			LOG.debug("delete weibo, its  owner's accessToken:" + jcUser.getAccessToken());
-			LOG.debug("delete weibo, its  owner's ip address:" + jcUser.getIpAddress());
-			jcUser = weiboService.deleteWeibo(jcUser);
-		}
+		LOG.debug("delete weibo, its  owner's sessionid:" + jcUser.getSession());
+		LOG.debug("delete weibo, its  owner's code:" + jcUser.getCode());
+		LOG.debug("delete weibo, its  owner's accessToken:" + jcUser.getAccessToken());
+		LOG.debug("delete weibo, its  owner's ip address:" + jcUser.getIpAddress());
+		jcUser = weiboService.deleteWeibo(jcUser);
 		State state = new State();
 		state.setDeleteCount(jcUser.getDeleteCount());
 		return state;

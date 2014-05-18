@@ -2,6 +2,7 @@ package com.jc.core.domain;
 
 import java.util.Date;
 import java.io.Serializable;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,16 @@ public class JcUser implements Serializable {
 	private int weiboCount;
 	private float fileSize; // MB unit
 	private String ipAddress;
-	private int deleteCount;
+	private int deleteCount; 
+	private boolean outOfLimit;
+
+	public boolean isOutOfLimit() {
+		return outOfLimit;
+	}
+
+	public void setOutOfLimit(boolean outOfLimit) {
+		this.outOfLimit = outOfLimit;
+	}
 
 	public void setId(Long id) {
 		this.id = id;
@@ -176,8 +186,9 @@ public class JcUser implements Serializable {
 	public void setDeleteCount(int deleteCount) {
 		this.deleteCount = deleteCount;
 	}
-	
-	public int getDeleteCount(){
+
+	public int getDeleteCount() {
 		return deleteCount;
 	}
+ 
 }
